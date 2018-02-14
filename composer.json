@@ -1,0 +1,8 @@
+{
+    "name": "ethercreative/yii2-graphql",
+    "autoload": {
+        "psr-4": {
+            "ether\\graph\\": "src/"
+        }
+    }
+}
