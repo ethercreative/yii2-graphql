@@ -18,9 +18,9 @@ class SearchQuery extends Query
     public function args()
     {
         return $this->convertArgs([
-            'first' => 'interger',
+            'first' => 'integer',
             'after' => 'string',
-            'last' => 'interger',
+            'last' => 'integer',
             'before' => 'string',
             'orderBy' => 'string',
             'query' => 'string!',
