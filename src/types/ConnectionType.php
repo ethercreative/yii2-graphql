@@ -52,20 +52,22 @@ class ConnectionType extends \yii\graphql\base\GraphQLType
                     return $root;
                 },
             ],
-            // 'pageInfo' => [
-            //     'type' => Type::nonNull(GraphQL::type(PageInfoType::class)),
-            //     'resolve' => function($root)
-            //     {
-            //         return $this->resolveConnection($root);
-            //     },
-            // ],
-            // 'totalCount' => [
-            //     'type' => Type::nonNull(Type::int()),
-            //     'resolve' => function($root)
-            //     {
-            //         return $this->resolveConnection($root)->count();
-            //     },
-            // ],
+            'pageInfo' => [
+                'type' => Type::nonNull(GraphQL::type(PageInfoType::class)),
+                'resolve' => function($root)
+                {
+                    return [];
+                    return $this->resolveConnection($root);
+                },
+            ],
+            'totalCount' => [
+                'type' => Type::nonNull(Type::int()),
+                'resolve' => function($root)
+                {
+                    return 0;
+                    return $this->resolveConnection($root)->count();
+                },
+            ],
         ];
     }
 }
