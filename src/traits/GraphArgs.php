@@ -24,12 +24,6 @@ trait GraphArgs
 
         foreach ($args as $attribute => $type)
         {
-            // if (!is_string($type))
-            // {
-            //     $_args[$attibute] = $type;
-            //     continue;
-            // }
-
             if (is_array($type))
             {
                 if (ArrayHelper::getValue($type, 'connection'))
@@ -42,13 +36,10 @@ trait GraphArgs
 
                     $type['resolve'] = function($root, $args, $context, $resolve) use ($relation)
                     {
-                        $models = $root->{'get' . $relation}();//->all();
-                        return $models;
+                        return ArrayHelper::getValue($root, Inflector::variablize($relation), []);
                     };
 
                     $_args[$attribute] = $type;
-
-                    // die('<pre>'.print_r($type, 1).'</pre>');
                 }
 
                 continue;

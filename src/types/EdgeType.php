@@ -36,26 +36,9 @@ class EdgeType extends \yii\graphql\base\GraphQLType
                 'type' => GraphQL::type($this->node),
                 'resolve' => function ($root, $args)
                 {
-                    // die('<pre>'.print_r('variable', 1).'</pre>');
                     return $root;
                 },
             ],
         ];
     }
-
-    // public function fields()
-    // {
-    //     $fields = $this->args();
-
-    //     // die('<pre>'.print_r($fields['node'], 1).'</pre>');
-
-    //     $fields['node']->resolveFieldFn = function()
-    //     {
-    //         die('<pre>'.print_r('resolve node', 1).'</pre>');
-    //     };
-
-    //     // die('<pre>'.print_r($fields['node'], 1).'</pre>');
-
-    //     return $fields;
-    // }
 }

@@ -4,6 +4,7 @@ namespace ether\graph\types;
 
 use ether\graph\traits\GraphArgs;
 use ether\graph\traits\ResolveConnection;
+use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 use yii\graphql\GraphQL;
 
@@ -46,10 +47,9 @@ class ConnectionType extends \yii\graphql\base\GraphQLType
         return [
             'edges' => [
                 'type' => Type::listOf(GraphQL::type($this->edges)),
-                'resolve' => function($root, $args)
+                'resolve' => function($root, $args, $context, ResolveInfo $info)
                 {
-                    return $root->all();
-                    return $this->resolveConnection($root, $args)->all();
+                    return $root;
                 },
             ],
             // 'pageInfo' => [
