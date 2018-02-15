@@ -13,12 +13,17 @@ class DateTimeType extends CustomScalarType
         parent::__construct([
             'name' => 'DateTime',
             'serialize' => [$this, 'serialize'],
+            'parseValue' => [$this, 'parseValue'],
+            'parseLiteral' => [$this, 'parseLiteral'],
         ]);
     }
+
     public function serialize($value)
     {
         if (is_string($value))
             return $value;
+        elseif (is_array($value))
+            return substr($value['date'], 0, 19);
         elseif ($value InstanceOf \DateTime)
             return $value->format('Y-m-d H:i:s');
         elseif ($value InstanceOf \yii\db\Expression)

@@ -10,6 +10,8 @@ use GraphQL\Type\Definition\Type;
 use Yii;
 use yii\graphql\base\GraphQLQuery;
 use yii\graphql\GraphQL;
+use yii\helpers\ArrayHelper;
+use yii\helpers\Inflector;
 
 class Query extends GraphQLQuery
 {
@@ -22,6 +24,12 @@ class Query extends GraphQLQuery
     public $args = [];
     public $checkAccess;
     public $withMap = [];
+    public $underscoreToVariable;
+
+    public function __construct()
+    {
+        $this->underscoreToVariable = ArrayHelper::getValue(Yii::$app->params, 'graph.underscore_to_variable');
+    }
 
     public function type()
     {
@@ -79,11 +87,15 @@ class Query extends GraphQLQuery
         if (!$model)
             return null;
 
-        if ($this->checkAccess) {
+        if ($this->checkAccess)
             call_user_func($this->checkAccess, $model);
-        }
 
-        $datamodel = new \ether\graph\models\DataModel($model->toArray([], $with));
+        $data = $model->toArray([], $with);
+
+        if ($this->underscoreToVariable)
+            $data = $this->underscoreToVariable($data);
+
+        $datamodel = new \ether\graph\models\DataModel($data);
 
         return $datamodel;
     }
@@ -119,5 +131,17 @@ class Query extends GraphQLQuery
                 }
             }
         }
+    }
+
+    private function underscoreToVariable($data)
+    {
+        if (!is_array($data)) return $data;
+
+        $_data = [];
+
+        foreach ($data as $key => $value)
+            $_data[Inflector::variablize($key)] = $this->underscoreToVariable($value);
+
+        return $_data;
     }
 }
