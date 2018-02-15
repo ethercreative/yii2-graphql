@@ -76,6 +76,9 @@ class Query extends GraphQLQuery
 
         $model = $query->one();
 
+        if (!$model)
+            return null;
+
         if ($this->checkAccess) {
             call_user_func($this->checkAccess, $model);
         }
