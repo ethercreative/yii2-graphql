@@ -2,6 +2,8 @@
 
 namespace ether\graph\types;
 
+use GraphQL\Type\Definition\Type as GraphType;
+
 class PageInfoType extends Type
 {
     public $name = 'PageInfo';
@@ -10,7 +12,7 @@ class PageInfoType extends Type
     {
         return [
             'endCursor' => [
-                'type' => Type::string(),
+                'type' => GraphType::string(),
                 'description' => 'When paginating forwards, the cursor to continue.',
                 'resolve' => function($root)
                 {
@@ -29,7 +31,7 @@ class PageInfoType extends Type
                 }
             ],
             'hasNextPage' => [
-                'type' => Type::boolean(),
+                'type' => GraphType::boolean(),
                 'description' => 'When paginating forwards, are there more items?',
                 'resolve' => function($root)
                 {
@@ -42,7 +44,7 @@ class PageInfoType extends Type
                 }
             ],
             'hasPreviousPage' => [
-                'type' => Type::boolean(),
+                'type' => GraphType::boolean(),
                 'description' => 'When paginating backwards, are there more items?',
                 'resolve' => function($root)
                 {
@@ -50,7 +52,7 @@ class PageInfoType extends Type
                 }
             ],
             'startCursor' => [
-                'type' => Type::string(),
+                'type' => GraphType::string(),
                 'description' => 'When paginating backwards, the cursor to continue.',
                 'resolve' => function($root)
                 {
