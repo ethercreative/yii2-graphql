@@ -8,6 +8,11 @@ class PageInfoType extends Type
 {
     public $name = 'PageInfo';
 
+    public function interfaces()
+    {
+        return [];
+    }
+
     public function fields()
     {
         return [
