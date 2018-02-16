@@ -39,6 +39,15 @@ trait GraphArgs
                         return ArrayHelper::getValue($root, Inflector::variablize($relation), []);
                     };
 
+                    $type['args'] = [
+                        'first' => Type::int(),
+                        'after' => Type::string(),
+                        'last' => Type::int(),
+                        'before' => Type::string(),
+                        'orderBy' => Type::string(),
+                        'query' => Type::string(),
+                    ];
+
                     $_args[$attribute] = $type;
                 }
 
