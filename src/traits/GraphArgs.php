@@ -99,7 +99,7 @@ trait GraphArgs
 
         $type = trim($type, '![] ');
 
-        $setType = explode(':', $type)[0];
+        list($setType, $typeValues) = array_pad(explode(':', $type, 2), 2, null);
 
         switch ($setType)
         {
@@ -130,12 +130,15 @@ trait GraphArgs
                 break;
 
             case 'enum':
-                preg_match_all('/([A-Z_]+)/', $type, $matches);
+                preg_match_all('/([A-z_:]+)/', $typeValues, $matches);
 
                 $values = [];
 
-                foreach ($matches[0] as $match) {
-                    $values[$match] = ['value' => $match];
+                foreach ($matches[0] as $match)
+                {
+                    list($key, $value) = array_pad(explode(':', trim($match, ':'), 2), 2, null);;
+
+                    $values[$key] = ['value' => $value ?: $key];
                 }
 
                 $type = new EnumType([
