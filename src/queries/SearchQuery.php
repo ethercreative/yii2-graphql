@@ -23,8 +23,9 @@ class SearchQuery extends Query
             'last' => 'integer',
             'before' => 'string',
             'orderBy' => 'string',
-            'query' => 'string!',
+            'query' => 'string',
             'type' => 'enum:' . join(',', $this->types),
+            'filters' => 'string',
         ]);
     }
 
