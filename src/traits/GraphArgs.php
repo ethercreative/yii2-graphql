@@ -32,13 +32,6 @@ trait GraphArgs
 
                     $type['type'] = $this->resolveArgString($type['type']);
 
-                    $relation = $type['resolve'];
-
-                    $type['resolve'] = function($root, $args, $context, $resolve) use ($relation)
-                    {
-                        return ArrayHelper::getValue($root, Inflector::variablize($relation), []);
-                    };
-
                     $type['args'] = [
                         'first' => Type::int(),
                         'after' => Type::string(),
@@ -47,6 +40,16 @@ trait GraphArgs
                         'orderBy' => Type::string(),
                         'query' => Type::string(),
                     ];
+
+                    $relation = $type['resolve'];
+
+                    if (!is_array($relation))
+                    {
+                        $type['resolve'] = function($root, $args, $context, $resolve) use ($relation)
+                        {
+                            return ArrayHelper::getValue($root, Inflector::variablize($relation), []);
+                        };
+                    }
 
                     $_args[$attribute] = $type;
                 }
