@@ -25,6 +25,7 @@ class Query extends GraphQLQuery
     public $checkAccess;
     public $withMap = [];
     public $underscoreToVariable;
+    public $beforeQuery;
 
     public function __construct()
     {
@@ -81,6 +82,9 @@ class Query extends GraphQLQuery
 
             $query->with($with);
         }
+
+        if ($this->beforeQuery)
+            call_user_func($this->beforeQuery, $query);
 
         $model = $query->one();
 
