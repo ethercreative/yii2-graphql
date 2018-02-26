@@ -3,6 +3,7 @@
 namespace ether\graph\mutations;
 
 use ether\graph\traits\GraphArgs;
+use ether\graph\traits\ShouldValidate;
 use GraphQL\Type\Definition\ResolveInfo;
 use yii\graphql\base\GraphQLMutation;
 use yii\graphql\GraphQL;
@@ -10,6 +11,7 @@ use yii\graphql\GraphQL;
 class Mutation extends GraphQLMutation
 {
     use GraphArgs;
+    use ShouldValidate;
 
     public $modelClass;
     public $name;

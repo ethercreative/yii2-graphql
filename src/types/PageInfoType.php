@@ -3,6 +3,8 @@
 namespace ether\graph\types;
 
 use GraphQL\Type\Definition\Type as GraphType;
+use GraphQL\Type\Definition\ResolveInfo;
+use yii\helpers\ArrayHelper;
 
 class PageInfoType extends Type
 {
@@ -21,7 +23,9 @@ class PageInfoType extends Type
                 'description' => 'When paginating forwards, the cursor to continue.',
                 'resolve' => function($root)
                 {
-                    return '';
+                    if (!$root) return null;
+
+                    return ArrayHelper::getValue($root, (count($root) - 1) . '.nodeData.id');
 
                     $query = clone $root;
                     // $query->offset = $query->limit - 1;
@@ -36,16 +40,18 @@ class PageInfoType extends Type
                 }
             ],
             'hasNextPage' => [
-                'type' => GraphType::boolean(),
+                'type' => GraphType::nonNull(GraphType::boolean()),
                 'description' => 'When paginating forwards, are there more items?',
-                'resolve' => function($root)
+                'resolve' => function($root, $args, $context, ResolveInfo $resolve)
                 {
                     return true;
 
                     $query = clone $root;
                     $limit = $query->limit;
 
-                    return count($query->select(['id'])->limit($limit+1)->all()) / $limit > 1;
+                    $hasNextPage = (bool) (count($query->select(['id'])->limit($limit+1)->all()) / $limit) > 1;
+
+                    return (bool) $hasNextPage ? true : false;
                 }
             ],
             'hasPreviousPage' => [
@@ -61,13 +67,7 @@ class PageInfoType extends Type
                 'description' => 'When paginating backwards, the cursor to continue.',
                 'resolve' => function($root)
                 {
-                    return '';
-
-                    $query = clone $root;
-                    $query->limit = 1;
-                    $query->select(array_keys($query->orderBy ?: ['id' => 1]));
-
-                    return base64_encode($query->scalar());
+                    return ArrayHelper::getValue($root, '0.nodeData.id');
                 }
             ],
         ];

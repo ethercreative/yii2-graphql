@@ -56,6 +56,7 @@ class ConnectionType extends \yii\graphql\base\GraphQLType
                 'type' => Type::nonNull(GraphQL::type(PageInfoType::class)),
                 'resolve' => function($root)
                 {
+                    return $root;
                     return [];
                     return $this->resolveConnection($root);
                 },

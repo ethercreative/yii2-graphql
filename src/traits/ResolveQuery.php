@@ -48,7 +48,8 @@ trait ResolveQuery
                 $orderBy = $modelClass::tableName() . '.created_at';
             }
 
-            $query->select([new Expression("encode(CONVERT_TO({$orderBy}::text, 'UTF-8'), 'base64'::text) as current_cursor"), $modelClass::tableName() . '.*']);
+            // $query->select([new Expression("encode(CONVERT_TO({$orderBy}::text, 'UTF-8'), 'base64'::text) as current_cursor"), $modelClass::tableName() . '.*']);
+            $query->select([$modelClass::tableName() . '.*']);
 
             $afterOperator = $direction === SORT_ASC ? '>' : '<';
             $beforeOperator = $direction === SORT_ASC ? '<' : '>';
