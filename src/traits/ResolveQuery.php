@@ -4,6 +4,7 @@ namespace ether\graph\traits;
 
 use yii\db\Expression;
 use yii\helpers\ArrayHelper;
+use yii\helpers\Json;
 
 trait ResolveQuery
 {
@@ -48,7 +49,6 @@ trait ResolveQuery
                 $orderBy = $modelClass::tableName() . '.created_at';
             }
 
-            // $query->select([new Expression("encode(CONVERT_TO({$orderBy}::text, 'UTF-8'), 'base64'::text) as current_cursor"), $modelClass::tableName() . '.*']);
             $query->select([$modelClass::tableName() . '.*']);
 
             $afterOperator = $direction === SORT_ASC ? '>' : '<';
@@ -57,9 +57,15 @@ trait ResolveQuery
             $after = ArrayHelper::getValue($args, 'after');
             $before = ArrayHelper::getValue($args, 'before');
 
+            if ($after)
+            {
+                $after = Json::decode(base64_decode($after));
+                $after = $after[1];
+            }
+
             $query
-                ->andFilterWhere([$afterOperator, $orderBy, $after ? base64_decode($after) : null])
-                ->andFilterWhere([$beforeOperator, $orderBy, $before ? base64_decode($before) : null])
+                ->andFilterWhere([$afterOperator, 'id', $after])
+                ->andFilterWhere([$beforeOperator, 'id', $before])
                 ->orderBy([$orderBy => $direction]);
         }
 
@@ -73,7 +79,5 @@ trait ResolveQuery
                     $query->with($key);
             }
         }
-
-        // die('<pre>'.print_r($query->modelClass, 1).'</pre>');
     }
 }
