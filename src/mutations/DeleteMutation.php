@@ -20,6 +20,9 @@ class DeleteMutation extends Mutation
         if (!$model)
             throw new NotFoundHttpException('Entity not found.');
 
+        if ($this->hasMethod('checkAccess'))
+            $this->checkAccess($model);
+
         return $model->delete();
     }
 

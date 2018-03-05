@@ -16,6 +16,9 @@ class CreateMutation extends Mutation
         if (!empty($scenarios['create']))
             $model->scenario = 'create';
 
+        if ($this->hasMethod('checkAccess'))
+            $this->checkAccess($model);
+
         if (!$model->save())
             throw new \Exception('Mutation validation passed, but model validation failed.');
 
