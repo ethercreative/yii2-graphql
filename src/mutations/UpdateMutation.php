@@ -14,6 +14,14 @@ class UpdateMutation extends Mutation
         if (!$model)
             throw new NotFoundHttpException('Entity not found.');
 
+        $scenarios = $model->scenarios();
+
+        if (isset($scenarios['update']))
+            $model->scenario = 'update';
+
+        if ($this->hasMethod('checkAccess'))
+            $this->checkAccess($model);
+
         $model->attributes = $args;
         $model->save();
 
