@@ -26,4 +26,13 @@ class Type extends GraphQLType
             'description' => $this->description,
         ];
     }
+
+    public function fields()
+    {
+        $args = $this->args();
+
+        $args['nodeId'] = GraphType::string();
+
+        return $args;
+    }
 }
