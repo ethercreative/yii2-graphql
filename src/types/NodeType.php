@@ -2,11 +2,12 @@
 
 namespace ether\graph\types;
 
+use yii\graphql\base\GraphQLInterfaceType;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
 use yii\graphql\GraphQL;
 
-class NodeType extends \yii\graphql\base\GraphQLInterfaceType
+class NodeType extends GraphQLInterfaceType
 {
     protected $attributes = [
         'name' => 'Node'
@@ -15,7 +16,12 @@ class NodeType extends \yii\graphql\base\GraphQLInterfaceType
     public function fields()
     {
         return [
-            'id' => GraphQL::type(UuidType::class),
+            'nodeId' => Type::string(),
         ];
+    }
+
+    public function resolveType($object)
+    {
+        return GraphQL::type($object->graphType, true);
     }
 }
