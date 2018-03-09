@@ -3,6 +3,7 @@
 namespace ether\graph\types;
 
 use ether\graph\traits\GraphArgs;
+use GraphQL\Type\Definition\Type as GraphType;
 use yii\graphql\base\GraphQLType;
 use yii\graphql\GraphQL;
 
