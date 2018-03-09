@@ -6,6 +6,7 @@ use ether\graph\traits\GraphArgs;
 use GraphQL\Type\Definition\Type as GraphType;
 use yii\graphql\base\GraphQLType;
 use yii\graphql\GraphQL;
+use yii\helpers\ArrayHelper;
 
 class Type extends GraphQLType
 {
@@ -32,7 +33,13 @@ class Type extends GraphQLType
     {
         $args = $this->args();
 
-        $args['nodeId'] = GraphType::string();
+        $args['nodeId'] = [
+            'type' => GraphType::string(),
+            'resolve' => function($root)
+            {
+                return ArrayHelper::getValue($root, 'nodeData.id');
+            }
+        ];
 
         return $args;
     }
