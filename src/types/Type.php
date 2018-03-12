@@ -15,6 +15,7 @@ class Type extends GraphQLType
     public $name;
     public $description;
     public $fields = [];
+    public static $with = [];
 
     public function interfaces()
     {

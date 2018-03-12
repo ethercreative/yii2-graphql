@@ -53,7 +53,7 @@ class Query extends GraphQLQuery
             ->andFilterWhere($_args)
             ->limit(1);
 
-        $with = [];
+        $with = $this->type::$with;
 
         $this->gatherWith($info->getFieldSelection(10), $with);
 
@@ -115,7 +115,11 @@ class Query extends GraphQLQuery
 
             if ($isEdge)
             {
+                $connectionTypeName = Inflector::camelize(Inflector::singularize($field)) . 'ConnectionType';
+                $connectionType = '\common\graph\types\\' . $connectionTypeName;
+
                 $with[] = $field;
+                $with += $connectionType::$with;
 
                 if (!empty($children['edges']['node']))
                 {
