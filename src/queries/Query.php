@@ -26,10 +26,12 @@ class Query extends GraphQLQuery
     public $withMap = [];
     public $underscoreToVariable;
     public $beforeQuery;
+    public $typeNamespace;
 
     public function __construct()
     {
         $this->underscoreToVariable = ArrayHelper::getValue(Yii::$app->params, 'graph.underscore_to_variable');
+        $this->typeNamespace = ArrayHelper::getValue(Yii::$app->params, 'graph.type_namespace');
     }
 
     public function type()
@@ -116,7 +118,7 @@ class Query extends GraphQLQuery
             if ($isEdge)
             {
                 $connectionTypeName = Inflector::camelize(Inflector::singularize($field)) . 'ConnectionType';
-                $connectionType = '\common\graph\types\\' . $connectionTypeName;
+                $connectionType = $this->typeNamespace . $connectionTypeName;
 
                 $with[] = $field;
                 $with += $connectionType::$with;
