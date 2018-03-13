@@ -17,6 +17,8 @@ class ConnectionType extends \yii\graphql\base\GraphQLType
     public $description;
     public $edges;
 
+    public static $with = [];
+
     public function __construct()
     {
         $this->attributes = [
