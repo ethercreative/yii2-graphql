@@ -18,6 +18,7 @@ class Mutation extends GraphQLMutation
     public $description;
     public $type;
     public $args = [];
+    public $refresh = false;
 
     public function __construct()
     {

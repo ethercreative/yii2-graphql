@@ -22,6 +22,9 @@ class CreateMutation extends Mutation
         if (!$model->save())
             throw new \Exception('Mutation validation passed, but model validation failed.');
 
-        return $model;
+        if ($this->refresh)
+            $model->refresh();
+
+        return $model->toArray([], $this->type::$with);
     }
 }
