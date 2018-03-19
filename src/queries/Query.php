@@ -96,16 +96,7 @@ class Query extends GraphQLQuery
         if ($this->checkAccess)
             call_user_func($this->checkAccess, $model);
 
-        return $query;
-
-        $data = $model->toArray([], $with);
-
-        if ($this->underscoreToVariable)
-            $data = $this->underscoreToVariable($data);
-
-        $datamodel = new \ether\graph\models\DataModel($data);
-
-        return $datamodel;
+        return $query->one();
     }
 
     private function gatherWith($selectedFields, &$with)

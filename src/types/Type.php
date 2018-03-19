@@ -38,7 +38,7 @@ class Type extends GraphQLType
             'type' => GraphType::string(),
             'resolve' => function($root)
             {
-                return ArrayHelper::getValue($root, 'nodeData.id');
+                return ArrayHelper::getValue($root, 'nodeId');
             }
         ];
 

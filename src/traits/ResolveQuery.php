@@ -25,7 +25,7 @@ trait ResolveQuery
         $orderBy = ArrayHelper::getValue($args, 'orderBy');
 
         if (!$orderBy)
-            $orderBy = 'created_at';
+            $orderBy = 'id';
 
         if ($orderBy)
         {
@@ -46,7 +46,7 @@ trait ResolveQuery
             }
             elseif (!$model->hasAttribute($orderBy))
             {
-                $orderBy = $modelClass::tableName() . '.created_at';
+                $orderBy = $modelClass::tableName() . '.id';
             }
 
             $query->select([$modelClass::tableName() . '.*']);
