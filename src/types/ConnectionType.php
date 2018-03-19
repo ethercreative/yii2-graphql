@@ -41,6 +41,7 @@ class ConnectionType extends \yii\graphql\base\GraphQLType
             'before' => Type::string(),
             'orderBy' => Type::string(),
             'query' => Type::string(),
+            'filter' => Type::string(),
         ];
     }
 
