@@ -25,18 +25,21 @@ class PageInfoType extends Type
                 {
                     if (!$root) return null;
 
-                    return ArrayHelper::getValue($root, (count($root) - 1) . '.nodeData.id');
+                    // return ArrayHelper::getValue($root, (count($root) - 1) . '.nodeData.id');
 
                     $query = clone $root;
                     // $query->offset = $query->limit - 1;
                     // $query->limit = 1;
                     // $query->select(array_keys($query->orderBy ?: ['id' => 1]));
 
-                    $query->select($query->select[0]);
+                    $query->select(['id']);
 
-                    $result = array_reverse($query->asArray()->all());
+                    $models = array_reverse($query->all());
 
-                    return ArrayHelper::getValue($result, '0.current_cursor', false);
+                    if ($model = ArrayHelper::getValue($models, 0))
+                        return $model->nodeId;
+
+                    return null;
                 }
             ],
             'hasNextPage' => [
@@ -67,7 +70,14 @@ class PageInfoType extends Type
                 'description' => 'When paginating backwards, the cursor to continue.',
                 'resolve' => function($root)
                 {
-                    return ArrayHelper::getValue($root, '0.nodeData.id');
+                    $query = clone $root;
+                    $query->limit(1)->select(['id']);
+                    $model = $query->one();
+
+                    if ($model)
+                        return $model->nodeId;
+
+                    return null;
                 }
             ],
         ];
