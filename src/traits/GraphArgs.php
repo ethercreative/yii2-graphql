@@ -141,10 +141,13 @@ trait GraphArgs
                     $values[$key] = ['value' => $value ?: $key];
                 }
 
+                $name = property_exists($this, 'name') ? $this->name : StringHelper::basename(get_class($this));
+
                 $type = new EnumType([
-                    'name' => Inflector::camelize($attribute),
+                    'name' => Inflector::camelize($name . ' ' . $attribute),
                     'values' => $values,
                 ]);
+
                 break;
 
             default:
