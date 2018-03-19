@@ -12,6 +12,7 @@ use yii\graphql\GraphQL;
 use yii\helpers\ArrayHelper;
 use yii\helpers\StringHelper;
 use yii\helpers\Inflector;
+use yii\helpers\Json;
 
 trait GraphArgs
 {
@@ -48,6 +49,16 @@ trait GraphArgs
                     {
                         $type['resolve'] = function($root, $args, $context, $resolve) use ($relation)
                         {
+                            // if ($relation === 'Quotes')
+                            //     die('<pre>'.print_r([
+                            //         $root->attributes,
+                            //         $args,
+                            //     ], 1).'</pre>');
+
+                            return $this->resolveConnectionRelation($root, $relation, $args);
+
+                            return $root->{'get' . Inflector::camelize($relation)}();
+
                             return ArrayHelper::getValue($root, Inflector::variablize($relation), []);
                         };
                     }
@@ -166,5 +177,23 @@ trait GraphArgs
             $type = Type::nonNull($type);
 
         return $type;
+    }
+
+    public function resolveConnectionRelation($root, $relation, $args)
+    {
+        $query = $root->{'get' . Inflector::camelize($relation)}();
+
+        if ($first = ArrayHelper::getValue($args, 'first', 10))
+            $query->limit($first);
+
+        if ($filter = ArrayHelper::getValue($args, 'filter'))
+        {
+            if (is_string($filter))
+                $filter = Json::decode($filter);
+
+            $query->andWhere($filter);
+        }
+
+        return $query;
     }
 }

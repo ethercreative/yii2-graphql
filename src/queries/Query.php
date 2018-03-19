@@ -96,6 +96,8 @@ class Query extends GraphQLQuery
         if ($this->checkAccess)
             call_user_func($this->checkAccess, $model);
 
+        return $query;
+
         $data = $model->toArray([], $with);
 
         if ($this->underscoreToVariable)

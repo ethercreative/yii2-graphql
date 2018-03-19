@@ -52,7 +52,8 @@ class ConnectionType extends \yii\graphql\base\GraphQLType
                 'type' => Type::listOf(GraphQL::type($this->edges)),
                 'resolve' => function($root, $args, $context, ResolveInfo $info)
                 {
-                    return $root;
+                    $query = clone $root;
+                    return $query->all();
                 },
             ],
             'pageInfo' => [
@@ -60,16 +61,18 @@ class ConnectionType extends \yii\graphql\base\GraphQLType
                 'resolve' => function($root)
                 {
                     return $root;
-                    return [];
-                    return $this->resolveConnection($root);
                 },
             ],
             'totalCount' => [
                 'type' => Type::nonNull(Type::int()),
                 'resolve' => function($root)
                 {
-                    return 0;
-                    return $this->resolveConnection($root)->count();
+                    if (is_array($root))
+                        return 0;
+
+                    $query = clone $root;
+
+                    return $query->limit(null)->count();
                 },
             ],
         ];
