@@ -39,6 +39,7 @@ trait GraphArgs
                         'before' => Type::string(),
                         'orderBy' => Type::string(),
                         'query' => Type::string(),
+                        'filter' => Type::string(),
                     ];
 
                     $relation = $type['resolve'];
