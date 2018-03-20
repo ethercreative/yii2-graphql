@@ -56,6 +56,10 @@ class ConnectionType extends \yii\graphql\base\GraphQLType
                         return $root;
 
                     $query = clone $root;
+
+                    if (!$query->orderBy)
+                        $query->orderBy('created_at');
+
                     return $query->all();
                 },
             ],
