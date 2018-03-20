@@ -5,6 +5,7 @@ namespace ether\graph\queries;
 use ether\graph\traits\GraphArgs;
 use ether\graph\traits\ResolveConnection;
 use ether\graph\traits\ResolveQuery;
+use ether\graph\traits\ConvertVariableType;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 use Yii;
@@ -18,6 +19,7 @@ class Query extends GraphQLQuery
     use GraphArgs;
     use ResolveConnection;
     use ResolveQuery;
+    use ConvertVariableType;
 
     public $modelClass;
     public $type;
