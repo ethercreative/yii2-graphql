@@ -2,6 +2,8 @@
 
 namespace ether\graph\traits;
 
+use yii\helpers\Inflector;
+
 trait ConvertVariableType
 {
     public function underscoreToVariable($data)
