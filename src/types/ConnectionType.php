@@ -52,6 +52,9 @@ class ConnectionType extends \yii\graphql\base\GraphQLType
                 'type' => Type::listOf(GraphQL::type($this->edges)),
                 'resolve' => function($root, $args, $context, ResolveInfo $info)
                 {
+                    if (is_array($root))
+                        return $root;
+
                     $query = clone $root;
                     return $query->all();
                 },
