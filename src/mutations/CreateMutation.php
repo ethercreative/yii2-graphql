@@ -8,6 +8,9 @@ class CreateMutation extends Mutation
 {
     public function resolve($root, $args, $context, ResolveInfo $resolve)
     {
+        if ($this->hasMethod('argsToAttributes'))
+            $args = $this->argsToAttributes($args);
+
         $model = new $this->modelClass;
         $model->attributes = $args;
 
