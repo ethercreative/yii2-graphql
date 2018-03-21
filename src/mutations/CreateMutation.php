@@ -28,6 +28,6 @@ class CreateMutation extends Mutation
         if ($this->refresh)
             $model->refresh();
 
-        return $model->toArray([], $this->type::$with);
+        return $model;
     }
 }
