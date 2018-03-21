@@ -57,18 +57,42 @@ class Query extends GraphQLQuery
             ->andFilterWhere($_args)
             ->limit(1);
 
-        $with = $this->type::$with;
+        $this->with($query, $info);
+
+        // die('<pre>'.print_r($with, 1).'</pre>');
+
+        if ($this->beforeQuery)
+            call_user_func($this->beforeQuery, $query);
+
+        $model = $query->one();
+
+        if (!$model)
+            return null;
+
+        if ($this->checkAccess)
+            call_user_func($this->checkAccess, $model);
+
+        return $model;
+    }
+
+    protected function with(&$query, ResolveInfo $info, $type = null)
+    {
+        if (!$type)
+            $type = $this->type;
+
+        $with = $type::$with;
+        $withMap = $this->withMap ?: $type::$withMap;
 
         $this->gatherWith($info->getFieldSelection(10), $with);
 
         if (!empty($with))
         {
-            if (!empty($this->withMap))
+            if (!empty($withMap))
             {
                 foreach ($with as &$relation)
                 {
-                    if (array_key_exists($relation, $this->withMap))
-                        $relation = $this->withMap[$relation];
+                    if (array_key_exists($relation, $withMap))
+                        $relation = $withMap[$relation];
 
                     if (is_array($relation))
                     {
@@ -84,39 +108,35 @@ class Query extends GraphQLQuery
                 }
             }
 
+            $with = array_unique($with);
+
             $query->with($with);
         }
-
-        if ($this->beforeQuery)
-            call_user_func($this->beforeQuery, $query);
-
-        $model = $query->one();
-
-        if (!$model)
-            return null;
-
-        if ($this->checkAccess)
-            call_user_func($this->checkAccess, $model);
-
-        return $query->one();
     }
 
-    private function gatherWith($selectedFields, &$with)
+    protected function gatherWith($selectedFields, &$with)
     {
         if (!is_array($selectedFields))
             return;
 
         foreach($selectedFields as $field => $children)
         {
+            if ($field === 'edges')
+            {
+                $children = ['edges' => $children];
+                // $field = $rootFieldFallback;
+                $field = null;
+            }
+
             $isEdge = !empty($children['edges']);
 
             if ($isEdge)
             {
                 $connectionTypeName = Inflector::camelize(Inflector::singularize($field)) . 'ConnectionType';
-                $connectionType = $this->typeNamespace . $connectionTypeName;
+                $connectionType = $this->typeNamespace . str_replace('Linked', '', $connectionTypeName);
 
                 $with[] = $field;
-                $with += $connectionType::$with;
+                // $with += $connectionType::$with;
 
                 if (!empty($children['edges']['node']))
                 {
@@ -131,14 +151,20 @@ class Query extends GraphQLQuery
                     if (!empty($sub))
                     {
                         foreach ($sub as $s)
-                            $with[] = join('.', [$field, $s]);
+                            $with[] = join('.', array_filter([$field, $s]));
                     }
                 }
             }
+            elseif(is_array($children))
+            {
+                $with[] = $field;
+            }
         }
+
+        $with = array_filter($with);
     }
 
-    private function underscoreToVariable($data)
+    protected function underscoreToVariable($data)
     {
         if (!is_array($data)) return $data;
 

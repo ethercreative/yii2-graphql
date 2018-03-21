@@ -49,17 +49,7 @@ trait GraphArgs
                     {
                         $type['resolve'] = function($root, $args, $context, $resolve) use ($relation)
                         {
-                            // if ($relation === 'Quotes')
-                            //     die('<pre>'.print_r([
-                            //         $root->attributes,
-                            //         $args,
-                            //     ], 1).'</pre>');
-
                             return $this->resolveConnectionRelation($root, $relation, $args);
-
-                            return $root->{'get' . Inflector::camelize($relation)}();
-
-                            return ArrayHelper::getValue($root, Inflector::variablize($relation), []);
                         };
                     }
 
@@ -181,6 +171,9 @@ trait GraphArgs
 
     public function resolveConnectionRelation($root, $relation, $args)
     {
+        if (!$args)
+            return $root->{Inflector::variablize($relation)};
+
         $query = $root->{'get' . Inflector::camelize($relation)}();
 
         if ($first = ArrayHelper::getValue($args, 'first', 10))
