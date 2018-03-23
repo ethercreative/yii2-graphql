@@ -27,6 +27,13 @@ class PageInfoType extends Type
 
                     // return ArrayHelper::getValue($root, (count($root) - 1) . '.nodeData.id');
 
+                    if (is_array($root))
+                    {
+                        $root = array_reverse($root);
+
+                        return ArrayHelper::getValue($root, '0.nodeId');
+                    }
+
                     $query = clone $root;
                     // $query->offset = $query->limit - 1;
                     // $query->limit = 1;
@@ -70,6 +77,9 @@ class PageInfoType extends Type
                 'description' => 'When paginating backwards, the cursor to continue.',
                 'resolve' => function($root)
                 {
+                    if (is_array($root))
+                        return ArrayHelper::getValue($root, '0.nodeId');
+
                     $query = clone $root;
                     $query->limit(1)->select(['id']);
                     $model = $query->one();
