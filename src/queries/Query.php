@@ -110,6 +110,10 @@ class Query extends GraphQLQuery
 
             $with = array_unique($with);
 
+            if (($key = array_search('pageInfo', $with)) !== false) {
+                unset($with[$key]);
+            }
+
             $query->with($with);
         }
     }
