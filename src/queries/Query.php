@@ -96,7 +96,7 @@ class Query extends GraphQLQuery
 
                     if (is_array($relation))
                     {
-                        $first = array_pop($relation);
+                        $first = array_shift($relation);
 
                         foreach ($relation as $r)
                         {
@@ -108,7 +108,7 @@ class Query extends GraphQLQuery
                 }
             }
 
-            $with = array_unique($with);
+            $with = array_values(array_unique(array_filter($with)));
 
             if (($key = array_search('pageInfo', $with)) !== false) {
                 unset($with[$key]);
