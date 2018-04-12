@@ -5,6 +5,7 @@ namespace ether\graph\traits;
 use yii\db\Expression;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Json;
+use yii\helpers\Inflector;
 
 trait ResolveQuery
 {
@@ -28,46 +29,7 @@ trait ResolveQuery
             $orderBy = 'id';
 
         if ($orderBy)
-        {
-            $direction = SORT_ASC;
-
-            if ($orderBy[0] === '-')
-            {
-                $direction = SORT_DESC;
-                $orderBy = trim($orderBy, '-');
-            }
-
-            if (strpos($orderBy, '.') !== false)
-            {
-                $orderParts = explode('.', $orderBy);
-                $query->joinWith("{$orderParts[0]} rel");
-                $orderBy = join('.', ['rel', $orderParts[1]]);
-                // check related attributes
-            }
-            elseif (!$model->hasAttribute($orderBy))
-            {
-                $orderBy = $modelClass::tableName() . '.id';
-            }
-
-            $query->select([$modelClass::tableName() . '.*']);
-
-            $afterOperator = $direction === SORT_ASC ? '>' : '<';
-            $beforeOperator = $direction === SORT_ASC ? '<' : '>';
-
-            $after = ArrayHelper::getValue($args, 'after');
-            $before = ArrayHelper::getValue($args, 'before');
-
-            if ($after)
-            {
-                $after = Json::decode(base64_decode($after));
-                $after = $after[1];
-            }
-
-            $query
-                ->andFilterWhere([$afterOperator, 'id', $after])
-                ->andFilterWhere([$beforeOperator, 'id', $before])
-                ->orderBy([$orderBy => $direction]);
-        }
+            $this->resolveOrder($query, $orderBy, $modelClass, $args);
 
         $fields = ArrayHelper::getValue($fields, 'edges.node');
 
@@ -79,5 +41,61 @@ trait ResolveQuery
                     $query->with($key);
             }
         }
+    }
+
+    protected function resolveOrder(&$query, $orderBy, $modelClass, $args = null, $model = null)
+    {
+
+        if (!$model)
+        {
+            if (is_string($modelClass))
+                $model = new $modelClass;
+            else
+                $model = $modelClass;
+        }
+
+        $direction = SORT_ASC;
+
+        if ($orderBy[0] === '-')
+        {
+            $direction = SORT_DESC;
+            $orderBy = trim($orderBy, '-');
+        }
+
+        if (strpos($orderBy, '.') !== false)
+        {
+            $orderParts = explode('.', $orderBy);
+            $query->joinWith("{$orderParts[0]} rel");
+            $orderBy = join('.', ['rel', $orderParts[1]]);
+            // check related attributes
+        }
+        else
+        {
+            $orderBy = Inflector::underscore($orderBy);
+
+            if (!$model->hasAttribute($orderBy))
+            {
+                $orderBy = $modelClass::tableName() . '.id';
+            }
+        }
+
+        $query->select([$modelClass::tableName() . '.*']);
+
+        $afterOperator = $direction === SORT_ASC ? '>' : '<';
+        $beforeOperator = $direction === SORT_ASC ? '<' : '>';
+
+        $after = ArrayHelper::getValue($args, 'after');
+        $before = ArrayHelper::getValue($args, 'before');
+
+        if ($after)
+        {
+            $after = Json::decode(base64_decode($after));
+            $after = $after[1];
+        }
+
+        $query
+            ->andFilterWhere([$afterOperator, 'id', $after])
+            ->andFilterWhere([$beforeOperator, 'id', $before])
+            ->orderBy([$orderBy => $direction]);
     }
 }

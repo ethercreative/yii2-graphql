@@ -176,6 +176,11 @@ trait GraphArgs
 
         $query = $root->{'get' . Inflector::camelize($relation)}();
 
+        if ($orderBy = ArrayHelper::getValue($args, 'orderBy'))
+        {
+            $this->resolveOrder($query, $orderBy, $query->modelClass);
+        }
+
         if ($first = ArrayHelper::getValue($args, 'first', 10))
             $query->limit($first);
 

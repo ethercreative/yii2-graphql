@@ -4,6 +4,7 @@ namespace ether\graph\types;
 
 use ether\graph\traits\GraphArgs;
 use ether\graph\traits\ConvertVariableType;
+use ether\graph\traits\ResolveQuery;
 use GraphQL\Type\Definition\Type as GraphType;
 use yii\graphql\base\GraphQLType;
 use yii\graphql\GraphQL;
@@ -13,6 +14,7 @@ class Type extends GraphQLType
 {
     use GraphArgs;
     use ConvertVariableType;
+    use ResolveQuery;
 
     public $name;
     public $description;
