@@ -66,16 +66,33 @@ trait ResolveQuery
 
             if ($model->hasAttribute($orderParts[0]))
             {
+                switch(ArrayHelper::getValue($model, 'jsonTypes.' . join('.', $orderParts)))
+                {
+                    case 'int':
+                    case 'integer':
+                        $type = '::int';
+                        break;
+
+                    case 'float':
+                        $type = '::float';
+                        break;
+
+                    default:
+                        $type = null;
+                        break;
+                }
+
                 $orderBy = join('', [
                     '(',
                     $model::tableName(),
-                    '.',
+                    '."',
                     $orderParts[0],
-                    '->>',
+                    '"->>',
                     '\'',
                     $orderParts[1],
                     '\'',
                     ')',
+                    $type,
                 ]);
             }
             else
@@ -95,6 +112,8 @@ trait ResolveQuery
             }
         }
 
+        // die('<pre>'.print_r([$orderBy], 1).'</pre>');
+
         $query->select([$modelClass::tableName() . '.*']);
 
         $afterOperator = $direction === SORT_ASC ? '>' : '<';
@@ -109,9 +128,16 @@ trait ResolveQuery
             $after = $after[1];
         }
 
+        $orderByString = sprintf(
+            '%s %s %s',
+            $orderBy,
+            $direction === SORT_ASC ? 'ASC' : 'DESC',
+            $direction === SORT_ASC ? 'NULLS FIRST' : 'NULLS LAST'
+        );
+
         $query
             ->andFilterWhere([$afterOperator, 'id', $after])
             ->andFilterWhere([$beforeOperator, 'id', $before])
-            ->orderBy([$orderBy => $direction]);
+            ->orderBy($orderByString);
     }
 }
