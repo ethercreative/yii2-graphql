@@ -62,44 +62,51 @@ trait ResolveQuery
 
         if (strpos($orderBy, '.') !== false)
         {
-            $orderParts = explode('.', $orderBy);
-
-            if ($model->hasAttribute($orderParts[0]))
+            if ($alias = ArrayHelper::getValue($model->sortAlias, $orderBy))
             {
-                switch(ArrayHelper::getValue($model, 'jsonTypes.' . join('.', $orderParts)))
-                {
-                    case 'int':
-                    case 'integer':
-                        $type = '::int';
-                        break;
-
-                    case 'float':
-                        $type = '::float';
-                        break;
-
-                    default:
-                        $type = null;
-                        break;
-                }
-
-                $orderBy = join('', [
-                    '(',
-                    $model::tableName(),
-                    '."',
-                    $orderParts[0],
-                    '"->>',
-                    '\'',
-                    $orderParts[1],
-                    '\'',
-                    ')',
-                    $type,
-                ]);
+                $orderBy = $alias;
             }
             else
             {
-                $query->joinWith("{$orderParts[0]} rel");
-                $orderBy = join('.', ['rel', $orderParts[1]]);
-                // check related attributes
+                $orderParts = explode('.', $orderBy);
+
+                if ($model->hasAttribute($orderParts[0]))
+                {
+                    switch(ArrayHelper::getValue($model, 'jsonTypes.' . join('.', $orderParts)))
+                    {
+                        case 'int':
+                        case 'integer':
+                            $type = '::int';
+                            break;
+
+                        case 'float':
+                            $type = '::float';
+                            break;
+
+                        default:
+                            $type = null;
+                            break;
+                    }
+
+                    $orderBy = join('', [
+                        '(',
+                        $model::tableName(),
+                        '."',
+                        $orderParts[0],
+                        '"->>',
+                        '\'',
+                        $orderParts[1],
+                        '\'',
+                        ')',
+                        $type,
+                    ]);
+                }
+                else
+                {
+                    $query->joinWith("{$orderParts[0]} rel");
+                    $orderBy = join('.', ['rel', $orderParts[1]]);
+                    // check related attributes
+                }
             }
         }
         else
