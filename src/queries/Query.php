@@ -167,16 +167,4 @@ class Query extends GraphQLQuery
 
         $with = array_filter($with);
     }
-
-    protected function underscoreToVariable($data)
-    {
-        if (!is_array($data)) return $data;
-
-        $_data = [];
-
-        foreach ($data as $key => $value)
-            $_data[Inflector::variablize($key)] = $this->underscoreToVariable($value);
-
-        return $_data;
-    }
 }
