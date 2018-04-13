@@ -112,7 +112,10 @@ trait ResolveQuery
             }
         }
 
-        // die('<pre>'.print_r([$orderBy], 1).'</pre>');
+        if ($orderBy === 'id')
+            $orderBy = $modelClass::tableName() . '.id';
+
+        $orderBy = '(' . $orderBy . ')';
 
         $query->select([$modelClass::tableName() . '.*']);
 
