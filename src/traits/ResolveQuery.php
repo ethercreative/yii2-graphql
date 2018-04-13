@@ -45,7 +45,6 @@ trait ResolveQuery
 
     protected function resolveOrder(&$query, $orderBy, $modelClass, $args = null, $model = null)
     {
-
         if (!$model)
         {
             if (is_string($modelClass))
@@ -57,17 +56,34 @@ trait ResolveQuery
         $direction = SORT_ASC;
 
         if ($orderBy[0] === '-')
-        {
             $direction = SORT_DESC;
-            $orderBy = trim($orderBy, '-');
-        }
+
+        $orderBy = trim($orderBy, '-+ ');
 
         if (strpos($orderBy, '.') !== false)
         {
             $orderParts = explode('.', $orderBy);
-            $query->joinWith("{$orderParts[0]} rel");
-            $orderBy = join('.', ['rel', $orderParts[1]]);
-            // check related attributes
+
+            if ($model->hasAttribute($orderParts[0]))
+            {
+                $orderBy = join('', [
+                    '(',
+                    $model::tableName(),
+                    '.',
+                    $orderParts[0],
+                    '->>',
+                    '\'',
+                    $orderParts[1],
+                    '\'',
+                    ')',
+                ]);
+            }
+            else
+            {
+                $query->joinWith("{$orderParts[0]} rel");
+                $orderBy = join('.', ['rel', $orderParts[1]]);
+                // check related attributes
+            }
         }
         else
         {
