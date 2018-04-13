@@ -148,6 +148,6 @@ trait ResolveQuery
         $query
             ->andFilterWhere([$afterOperator, 'id', $after])
             ->andFilterWhere([$beforeOperator, 'id', $before])
-            ->orderBy($orderByString);
+            ->orderBy([$orderBy => $direction]);
     }
 }
