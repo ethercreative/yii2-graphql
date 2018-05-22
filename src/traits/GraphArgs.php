@@ -78,6 +78,9 @@ trait GraphArgs
 
     private function resolveArgString($type, $attribute = null)
     {
+        if (is_object($type))
+            return $type;
+
         if (strpos(trim($type, '[ '), 'type:') === 0)
         {
             $type = str_replace('type:', '', $type);
@@ -132,7 +135,7 @@ trait GraphArgs
                 break;
 
             case 'enum':
-                preg_match_all('/([A-z_:]+)/', $typeValues, $matches);
+                preg_match_all('/([0-9A-z_:]+)/', $typeValues, $matches);
 
                 $values = [];
 
