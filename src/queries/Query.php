@@ -43,6 +43,8 @@ class Query extends GraphQLQuery
 
     public function resolve($root, $args, $context, ResolveInfo $info)
     {
+        $args = $this->variableToUnderscore($args);
+
         $modelClass = $this->modelClass;
 
         $_args = [];
