@@ -16,12 +16,26 @@ trait ResolveQuery
         else
             $model = $modelClass;
 
+        $max = ArrayHelper::getValue($this, 'maxPageSize', 50);
+
         if ($first = ArrayHelper::getValue($args, 'first'))
-            $query->limit($first <= 50 ? $first : 10);
+        {
+            if ($first > $max)
+                $first = $max;
+
+            $query->limit($first);
+        }
         elseif ($last = ArrayHelper::getValue($args, 'last'))
-            $query->limit($last <= 50 ? $last : 10);
+        {
+            if ($last > $max)
+                $last = $max;
+
+            $query->limit($last);
+        }
         else
-            $query->limit(10);
+        {
+            $query->limit(20);
+        }
 
         $orderBy = ArrayHelper::getValue($args, 'orderBy');
 
