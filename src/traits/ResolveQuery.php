@@ -40,7 +40,7 @@ trait ResolveQuery
         $orderBy = ArrayHelper::getValue($args, 'orderBy');
 
         if (!$orderBy)
-            $orderBy = 'id';
+            $orderBy = ArrayHelper::getValue($this, 'defaultOrder');
 
         if ($orderBy)
             $this->resolveOrder($query, $orderBy, $modelClass, $args);
