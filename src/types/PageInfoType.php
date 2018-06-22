@@ -54,12 +54,13 @@ class PageInfoType extends Type
                 'description' => 'When paginating forwards, are there more items?',
                 'resolve' => function($root, $args, $context, ResolveInfo $resolve)
                 {
-                    return true;
+                    if (getenv('GRAPH_PAGE_INFO_FORCE_NEXT_PAGE'))
+                        return true;
 
                     $query = clone $root;
                     $limit = $query->limit;
 
-                    $hasNextPage = (bool) (count($query->select(['id'])->limit($limit+1)->all()) / $limit) > 1;
+                    $hasNextPage = (bool) ((count($query->select(['id'])->limit($limit+1)->all()) / $limit) > 1);
 
                     return (bool) $hasNextPage ? true : false;
                 }
