@@ -39,7 +39,7 @@ class PageInfoType extends Type
                     // $query->limit = 1;
                     // $query->select(array_keys($query->orderBy ?: ['id' => 1]));
 
-                    $query->select(['id']);
+                    $query->select(['id'])->with([]);
 
                     $models = array_reverse($query->all());
 
@@ -60,7 +60,7 @@ class PageInfoType extends Type
                     $query = clone $root;
                     $limit = $query->limit;
 
-                    $hasNextPage = (bool) ((count($query->select(['id'])->limit($limit+1)->all()) / $limit) > 1);
+                    $hasNextPage = (bool) ((count($query->select(['id'])->with([])->limit($limit+1)->all()) / $limit) > 1);
 
                     return (bool) $hasNextPage ? true : false;
                 }
@@ -82,7 +82,7 @@ class PageInfoType extends Type
                         return ArrayHelper::getValue($root, '0.nodeId');
 
                     $query = clone $root;
-                    $query->limit(1)->select(['id']);
+                    $query->limit(1)->with([])->select(['id']);
                     $model = $query->one();
 
                     if ($model)

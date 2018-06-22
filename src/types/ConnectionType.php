@@ -55,12 +55,10 @@ class ConnectionType extends \yii\graphql\base\GraphQLType
                     if (is_array($root))
                         return $root;
 
-                    $query = clone $root;
+                    if (!$root->orderBy)
+                        $root->orderBy('created_at');
 
-                    if (!$query->orderBy)
-                        $query->orderBy('created_at');
-
-                    return $query->all();
+                    return $root->all();
                 },
             ],
             'pageInfo' => [
@@ -79,7 +77,7 @@ class ConnectionType extends \yii\graphql\base\GraphQLType
 
                     $query = clone $root;
 
-                    return $query->limit(null)->count();
+                    return $query->limit(null)->with([])->count();
                 },
             ],
         ];

@@ -49,7 +49,9 @@ trait GraphArgs
                     {
                         $type['resolve'] = function($root, $args, $context, $resolve) use ($relation)
                         {
-                            return $this->resolveConnectionRelation($root, $relation, $args);
+                            $relation[0] = strtolower($relation[0]);
+
+                            return $root->{$relation};
                         };
                     }
 
