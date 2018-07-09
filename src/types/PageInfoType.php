@@ -57,6 +57,9 @@ class PageInfoType extends Type
                     if (getenv('GRAPH_PAGE_INFO_FORCE_NEXT_PAGE'))
                         return true;
 
+                    if (is_array($root) || !is_object($root))
+                        return true;
+
                     $query = clone $root;
                     $limit = $query->limit;
 
