@@ -69,7 +69,7 @@ class PageInfoType extends Type
                         ->limit(1)
                         ->offset($offset);
 
-                    return $query->exists();
+                    return (bool) $query->one();
                 }
             ],
             'hasPreviousPage' => [
