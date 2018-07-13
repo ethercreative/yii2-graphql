@@ -25,28 +25,25 @@ class PageInfoType extends Type
                 {
                     if (!$root) return null;
 
-                    // return ArrayHelper::getValue($root, (count($root) - 1) . '.nodeData.id');
-
                     if (is_array($root))
                     {
                         $root = array_reverse($root);
-
                         return ArrayHelper::getValue($root, '0.nodeId');
                     }
 
                     $query = clone $root;
-                    // $query->offset = $query->limit - 1;
-                    // $query->limit = 1;
-                    // $query->select(array_keys($query->orderBy ?: ['id' => 1]));
+                    $limit = $query->limit;
+                    $offset = $query->offset;
 
-                    $query->select(['id'])->with([]);
+                    $query
+                        ->select(['id'])
+                        ->with([])
+                        ->limit(1)
+                        ->offset($offset + $limit - 1);
 
-                    $models = array_reverse($query->all());
+                    $model = $query->one();
 
-                    if ($model = ArrayHelper::getValue($models, 0))
-                        return $model->nodeId;
-
-                    return null;
+                    return ArrayHelper::getValue($model, 'nodeId');
                 }
             ],
             'hasNextPage' => [
