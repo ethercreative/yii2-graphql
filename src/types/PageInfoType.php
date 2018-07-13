@@ -62,10 +62,17 @@ class PageInfoType extends Type
 
                     $query = clone $root;
                     $limit = $query->limit;
+                    $offset = $query->offset;
 
-                    $hasNextPage = (bool) ((count($query->select(['id'])->with([])->limit($limit+1)->all()) / $limit) > 1);
+                    $offset += $limit;
 
-                    return (bool) $hasNextPage ? true : false;
+                    $query
+                        ->select(['id'])
+                        ->with([])
+                        ->limit(1)
+                        ->offset($offset);
+
+                    return $query->exists();
                 }
             ],
             'hasPreviousPage' => [
