@@ -131,6 +131,9 @@ trait ResolveQuery
             {
                 $orderBy = $modelClass::tableName() . '.id';
             }
+
+            if (strpos($orderBy, '.') === false)
+                $orderBy = $modelClass::tableName() . '.' . $orderBy;
         }
 
         if ($orderBy === 'id')
