@@ -49,7 +49,26 @@ trait GraphArgs
                     {
                         $type['resolve'] = function($root, $args, $context, $resolve) use ($relation)
                         {
+                            $originalRelation = $relation;
                             $relation[0] = strtolower($relation[0]);
+
+                            $filters = ArrayHelper::getValue($args, 'filters');
+
+                            if (!$filters)
+                                $filters = ArrayHelper::getValue($args, 'filter');
+
+                            if (is_string($filters))
+                                $filters = Json::decode($filters);
+
+                            $filters = $this->variableToUnderscore($filters);
+
+                            if ($filters)
+                            {
+                                $query = $root->{"get{$originalRelation}"}();
+                                $query->andWhere($filters);
+
+                                return $query;
+                            }
 
                             return $root->{$relation};
                         };
