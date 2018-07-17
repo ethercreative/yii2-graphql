@@ -61,10 +61,24 @@ class Query extends GraphQLQuery
 
         $this->with($query, $info);
 
-        // die('<pre>'.print_r($with, 1).'</pre>');
-
         if ($this->beforeQuery)
             call_user_func($this->beforeQuery, $query);
+
+        $fields = $info->getFieldSelection(10);
+
+        if (!empty($fields))
+        {
+            $totalOnly = true;
+
+            foreach ($fields as $field)
+            {
+                if ($field !== ['totalCount' => true])
+                    $totalOnly = false;
+            }
+
+            if ($totalOnly)
+                unset($query->with);
+        }
 
         $model = $query->one();
 
