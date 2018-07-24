@@ -53,6 +53,7 @@ trait GraphArgs
                             $relation[0] = strtolower($relation[0]);
 
                             $filters = ArrayHelper::getValue($args, 'filters');
+                            $orderBy = ArrayHelper::getValue($args, 'orderBy');
 
                             if (!$filters)
                                 $filters = ArrayHelper::getValue($args, 'filter');
@@ -62,10 +63,24 @@ trait GraphArgs
 
                             $filters = $this->variableToUnderscore($filters);
 
-                            if ($filters)
+                            if ($filters || $orderBy)
                             {
                                 $query = $root->{"get{$originalRelation}"}();
-                                $query->andWhere($filters);
+
+                                if ($filters)
+                                    $query->andWhere($filters);
+
+                                if ($orderBy)
+                                {
+                                    $direction = SORT_ASC;
+
+                                    if (strpos($orderBy, '-') === 1)
+                                        $direction = SORT_DESC;
+
+                                    $orderBy = trim(Inflector::underscore($orderBy), ' -+');
+
+                                    $query->orderBy($orderBy);
+                                }
 
                                 return $query;
                             }
