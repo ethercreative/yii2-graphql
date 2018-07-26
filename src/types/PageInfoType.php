@@ -5,6 +5,7 @@ namespace ether\graph\types;
 use GraphQL\Type\Definition\Type as GraphType;
 use GraphQL\Type\Definition\ResolveInfo;
 use yii\helpers\ArrayHelper;
+use yii\db\Expression;
 
 class PageInfoType extends Type
 {
@@ -35,8 +36,22 @@ class PageInfoType extends Type
                     $limit = $query->limit;
                     $offset = $query->offset;
 
+                    $select = ['id'];
+
+                    foreach ($query->select as $where)
+                    {
+                        if (!($where InstanceOf Expression))
+                            continue;
+
+                        if (strpos($where->expression, '_node_id') !== false)
+                        {
+                            $select = $where;
+                            break;
+                        }
+                    }
+
                     $query
-                        ->select(['id'])
+                        ->select($select)
                         ->with([])
                         ->limit(1)
                         ->offset($offset + $limit - 1);
@@ -89,7 +104,22 @@ class PageInfoType extends Type
                         return ArrayHelper::getValue($root, '0.nodeId');
 
                     $query = clone $root;
-                    $query->limit(1)->with([])->select(['id']);
+
+                    $select = ['id'];
+
+                    foreach ($query->select as $where)
+                    {
+                        if (!($where InstanceOf Expression))
+                            continue;
+
+                        if (strpos($where->expression, '_node_id') !== false)
+                        {
+                            $select = $where;
+                            break;
+                        }
+                    }
+
+                    $query->limit(1)->with([])->select($select);
                     $model = $query->one();
 
                     if ($model)
