@@ -38,7 +38,7 @@ class PageInfoType extends Type
 
                     $select = ['id'];
 
-                    foreach ($query->select as $where)
+                    foreach ((array) $query->select as $where)
                     {
                         if (!($where InstanceOf Expression))
                             continue;
