@@ -36,7 +36,9 @@ class PageInfoType extends Type
                     $limit = $query->limit;
                     $offset = $query->offset;
 
-                    $select = ['id'];
+                    $tableName = $query->modelClass::tableName();
+
+                    $select = ["{$tableName}.id"];
 
                     foreach ((array) $query->select as $where)
                     {
@@ -78,8 +80,12 @@ class PageInfoType extends Type
 
                     $offset += $limit;
 
+                    $tableName = $query->modelClass::tableName();
+
+                    $select = ["{$tableName}.id"];
+
                     $query
-                        ->select(['id'])
+                        ->select($select)
                         ->with([])
                         ->limit(1)
                         ->offset($offset);
@@ -105,7 +111,9 @@ class PageInfoType extends Type
 
                     $query = clone $root;
 
-                    $select = ['id'];
+                    $tableName = $query->modelClass::tableName();
+
+                    $select = ["{$tableName}.id"];
 
                     foreach ($query->select as $where)
                     {
