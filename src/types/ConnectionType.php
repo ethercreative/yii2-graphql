@@ -55,8 +55,8 @@ class ConnectionType extends \yii\graphql\base\GraphQLType
                     if (is_array($root))
                         return $root;
 
-                    if (!$root->orderBy)
-                        $root->orderBy('created_at');
+                    // if (!$root->orderBy)
+                    //     $root->orderBy('created_at');
 
                     return $root->all();
                 },
@@ -77,7 +77,7 @@ class ConnectionType extends \yii\graphql\base\GraphQLType
 
                     $query = clone $root;
 
-                    return $query->limit(null)->with([])->count();
+                    return $query->limit(null)->with([])->orderBy(null)->count();
                 },
             ],
         ];
