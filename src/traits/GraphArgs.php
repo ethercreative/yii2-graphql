@@ -74,12 +74,12 @@ trait GraphArgs
                                 {
                                     $direction = SORT_ASC;
 
-                                    if (strpos($orderBy, '-') === 1)
+                                    if (strpos($orderBy, '-') === 0)
                                         $direction = SORT_DESC;
 
                                     $orderBy = trim(Inflector::underscore($orderBy), ' -+');
 
-                                    $query->orderBy($orderBy);
+                                    $query->orderBy([$orderBy => $direction]);
                                 }
 
                                 return $query;
