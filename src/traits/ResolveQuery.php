@@ -37,6 +37,12 @@ trait ResolveQuery
             $query->limit(20);
         }
 
+        if ($after = ArrayHelper::getValue($args, 'after'))
+        {
+            $after = Json::decode(base64_decode($after));
+            $query->offset($after);
+        }
+
         $orderBy = ArrayHelper::getValue($args, 'orderBy');
 
         if (!$orderBy)
@@ -143,28 +149,7 @@ trait ResolveQuery
 
         $query->select([$modelClass::tableName() . '.*']);
 
-        $afterOperator = $direction === SORT_ASC ? '>' : '<';
-        $beforeOperator = $direction === SORT_ASC ? '<' : '>';
-
-        $after = ArrayHelper::getValue($args, 'after');
-        $before = ArrayHelper::getValue($args, 'before');
-
-        if ($after)
-        {
-            $after = Json::decode(base64_decode($after));
-            $after = $after[1];
-        }
-
-        $orderByString = sprintf(
-            '%s %s %s',
-            $orderBy,
-            $direction === SORT_ASC ? 'ASC' : 'DESC',
-            $direction === SORT_ASC ? 'NULLS FIRST' : 'NULLS LAST'
-        );
-
         $query
-            ->andFilterWhere([$afterOperator, 'id', $after])
-            ->andFilterWhere([$beforeOperator, 'id', $before])
             ->orderBy([$orderBy => $direction]);
     }
 }
