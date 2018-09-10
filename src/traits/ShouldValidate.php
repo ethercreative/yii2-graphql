@@ -27,7 +27,12 @@ trait ShouldValidate
                 if (getenv('GRAPH_SHOULD_VALIDATE_SET_DEFAULTS'))
                     $args = $this->setAttributeDefaults($args, $rules);
 
-                if (getenv('GRAPH_SHOULD_VALIDATE_MODEL'))
+                $shouldValidateModel = false;
+
+                if ($this->hasProperty('shouldValidateModel') && getenv('GRAPH_SHOULD_VALIDATE_MODEL'))
+                    $shouldValidateModel = $this->shouldValidateModel;
+
+                if ($shouldValidateModel)
                 {
                     $model = new $this->modelClass;
                     $model->attributes = $args;
