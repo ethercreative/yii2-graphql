@@ -85,8 +85,13 @@ class Query extends GraphQLQuery
         if (!$model)
             return null;
 
-        if ($this->checkAccess)
-            call_user_func($this->checkAccess, $model);
+        if ($checkAccess = $this->checkAccess)
+        {
+            if (is_string($checkAccess))
+                Yii::$app->scope->checkAccess($checkAccess, $model);
+            else
+                call_user_func($this->checkAccess, $model);
+        }
 
         return $model;
     }
