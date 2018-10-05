@@ -23,7 +23,10 @@ class DateTimeType extends CustomScalarType
         if (is_string($value))
             return $value;
         elseif (is_array($value))
+        {
+            if (empty($date['date'])) return null;
             return substr($value['date'], 0, 19);
+        }
         elseif ($value InstanceOf \DateTime)
             return $value->format('Y-m-d H:i:s');
         elseif ($value InstanceOf \yii\db\Expression)
