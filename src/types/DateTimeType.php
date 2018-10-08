@@ -24,7 +24,7 @@ class DateTimeType extends CustomScalarType
             return $value;
         elseif (is_array($value))
         {
-            if (empty($date['date'])) return null;
+            if (empty($date['date'])) return '';
             return substr($value['date'], 0, 19);
         }
         elseif ($value InstanceOf \DateTime)
@@ -32,6 +32,6 @@ class DateTimeType extends CustomScalarType
         elseif ($value InstanceOf \yii\db\Expression)
             return date('Y-m-d H:i:s');
 
-        return null;
+        return '';
     }
 }
