@@ -29,6 +29,7 @@ class Query extends GraphQLQuery
     public $underscoreToVariable;
     public $beforeQuery;
     public $typeNamespace;
+    public $cacheFind;
 
     public function __construct()
     {
@@ -58,6 +59,9 @@ class Query extends GraphQLQuery
         $query = ($modelClass)::find()
             ->andFilterWhere($_args)
             ->limit(1);
+
+        if ($this->cacheFind)
+            $query->cache($this->cacheFind);
 
         $this->with($query, $info);
 
