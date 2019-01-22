@@ -25,72 +25,74 @@ trait GraphArgs
 
         foreach ($args as $attribute => $type)
         {
-            if (is_array($type))
+            if (is_array($type) && ArrayHelper::getValue($type, 'connection'))
             {
-                if (ArrayHelper::getValue($type, 'connection'))
+                unset($type['connection']);
+
+                $type['type'] = $this->resolveArgString($type['type']);
+
+                $type['args'] = [
+                    'first' => Type::int(),
+                    'after' => Type::string(),
+                    'last' => Type::int(),
+                    'before' => Type::string(),
+                    'orderBy' => Type::string(),
+                    'query' => Type::string(),
+                    'filter' => Type::string(),
+                ];
+
+                $relation = $type['resolve'];
+
+                if (!is_array($relation))
                 {
-                    unset($type['connection']);
-
-                    $type['type'] = $this->resolveArgString($type['type']);
-
-                    $type['args'] = [
-                        'first' => Type::int(),
-                        'after' => Type::string(),
-                        'last' => Type::int(),
-                        'before' => Type::string(),
-                        'orderBy' => Type::string(),
-                        'query' => Type::string(),
-                        'filter' => Type::string(),
-                    ];
-
-                    $relation = $type['resolve'];
-
-                    if (!is_array($relation))
+                    $type['resolve'] = function($root, $args, $context, $resolve) use ($relation)
                     {
-                        $type['resolve'] = function($root, $args, $context, $resolve) use ($relation)
-                        {
-                            $originalRelation = $relation;
+                        $originalRelation = $relation;
+
+                        if (is_string($relation))
                             $relation[0] = strtolower($relation[0]);
 
-                            $filters = ArrayHelper::getValue($args, 'filters');
-                            $orderBy = ArrayHelper::getValue($args, 'orderBy');
+                        $filters = ArrayHelper::getValue($args, 'filters');
+                        $orderBy = ArrayHelper::getValue($args, 'orderBy');
 
-                            if (!$filters)
-                                $filters = ArrayHelper::getValue($args, 'filter');
+                        if (!$filters)
+                            $filters = ArrayHelper::getValue($args, 'filter');
 
-                            if (is_string($filters))
-                                $filters = Json::decode($filters);
+                        if (is_string($filters))
+                            $filters = Json::decode($filters);
 
-                            $filters = $this->variableToUnderscore($filters);
+                        $filters = $this->variableToUnderscore($filters);
 
-                            if ($filters || $orderBy)
+                        if ($filters || $orderBy)
+                        {
+                            $query = $root->{"get{$originalRelation}"}();
+
+                            if ($filters)
+                                $query->andWhere($filters);
+
+                            if ($orderBy)
                             {
-                                $query = $root->{"get{$originalRelation}"}();
+                                $direction = SORT_ASC;
 
-                                if ($filters)
-                                    $query->andWhere($filters);
+                                if (strpos($orderBy, '-') === 0)
+                                    $direction = SORT_DESC;
 
-                                if ($orderBy)
-                                {
-                                    $direction = SORT_ASC;
+                                $orderBy = trim(Inflector::underscore($orderBy), ' -+');
 
-                                    if (strpos($orderBy, '-') === 0)
-                                        $direction = SORT_DESC;
-
-                                    $orderBy = trim(Inflector::underscore($orderBy), ' -+');
-
-                                    $query->orderBy([$orderBy => $direction]);
-                                }
-
-                                return $query;
+                                $query->orderBy([$orderBy => $direction]);
                             }
 
-                            return $root->{$relation};
-                        };
-                    }
+                            return $query;
+                        }
 
-                    $_args[$attribute] = $type;
+                        if (is_string($relation))
+                            return $root->{$relation};
+
+                        return $relation($root, $args, $context, $resolve);
+                    };
                 }
+
+                $_args[$attribute] = $type;
 
                 continue;
             }
@@ -116,6 +118,9 @@ trait GraphArgs
     {
         if (is_object($type))
             return $type;
+
+        if (is_array($type))
+            $type = ArrayHelper::getValue($type, 'type');
 
         if (strpos(trim($type, '[ '), 'type:') === 0)
         {
