@@ -7,6 +7,7 @@ use ether\graph\traits\ResolveConnection;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 use yii\graphql\GraphQL;
+use yii\helpers\ArrayHelper;
 
 class ConnectionType extends \yii\graphql\base\GraphQLType
 {
@@ -55,8 +56,21 @@ class ConnectionType extends \yii\graphql\base\GraphQLType
                     if (is_array($root))
                         return $root;
 
-                    // if (!$root->orderBy)
-                    //     $root->orderBy('created_at');
+                    if (ArrayHelper::getValue($root->having, '_findBySql'))
+                    {
+                        $having = $root->having;
+
+                        unset($having['_findBySql']);
+
+                        $root->having = $having;
+
+                        $query = $root->createCommand()->rawSql;
+                        $query = str_replace('AND (0=1)', '', $query);
+
+                        $db = $root->modelClass::getDb();
+
+                        return $root->modelClass::findBySql($query)->all();
+                    }
 
                     return $root->all();
                 },
