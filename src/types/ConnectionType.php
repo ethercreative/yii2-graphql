@@ -64,10 +64,10 @@ class ConnectionType extends \yii\graphql\base\GraphQLType
 
                         $root->having = $having;
 
-                        $query = $root->createCommand()->rawSql;
-                        $query = str_replace('AND (0=1)', '', $query);
+                        $sql = $root->createCommand()->rawSql;
+                        $sql = str_replace('AND (0=1)', '', $sql);
 
-                        return $root->modelClass::findBySql($query)->all();
+                        return $root->modelClass::findBySql($sql)->all();
                     }
 
                     return $root->all();
@@ -99,10 +99,10 @@ class ConnectionType extends \yii\graphql\base\GraphQLType
 
                         $query->having = $having;
 
-                        $query = $query->createCommand()->rawSql;
-                        $query = str_replace('AND (0=1)', '', $query);
+                        $sql = $query->createCommand()->rawSql;
+                        $sql = str_replace('AND (0=1)', '', $sql);
 
-                        return $query->modelClass::findBySql($query)->count();
+                        return $query->modelClass::findBySql($sql)->count();
                     }
 
                     return $query->count();
