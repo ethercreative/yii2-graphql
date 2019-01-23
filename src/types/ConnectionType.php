@@ -67,8 +67,6 @@ class ConnectionType extends \yii\graphql\base\GraphQLType
                         $query = $root->createCommand()->rawSql;
                         $query = str_replace('AND (0=1)', '', $query);
 
-                        $db = $root->modelClass::getDb();
-
                         return $root->modelClass::findBySql($query)->all();
                     }
 
@@ -91,7 +89,23 @@ class ConnectionType extends \yii\graphql\base\GraphQLType
 
                     $query = clone $root;
 
-                    return $query->limit(null)->with([])->orderBy(null)->count();
+                    $query->limit(null)->with([])->orderBy(null);
+
+                    if (ArrayHelper::getValue($query->having, '_findBySql'))
+                    {
+                        $having = $query->having;
+
+                        unset($having['_findBySql']);
+
+                        $query->having = $having;
+
+                        $query = $query->createCommand()->rawSql;
+                        $query = str_replace('AND (0=1)', '', $query);
+
+                        return $query->modelClass::findBySql($query)->count();
+                    }
+
+                    return $query->count();
                 },
             ],
         ];
