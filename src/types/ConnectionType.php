@@ -11,6 +11,7 @@ use yii\graphql\GraphQL;
 use yii\helpers\ArrayHelper;
 use yii\db\Expression;
 use ether\graph\traits\CloneQuery;
+use ether\graph\traits\GatherWith;
 
 class ConnectionType extends \yii\graphql\base\GraphQLType
 {
@@ -18,6 +19,7 @@ class ConnectionType extends \yii\graphql\base\GraphQLType
     use ResolveConnection;
     use ResolveQuery;
     use CloneQuery;
+    use GatherWith;
 
     public $name;
     public $description;
@@ -65,6 +67,11 @@ class ConnectionType extends \yii\graphql\base\GraphQLType
                     $this->findBySql($root);
 
                     $this->resolveQuery($root->modelClass, $root, $args);
+
+                    // if (!$root->with)
+                        $this->with($root, $info);
+
+                    // die('<pre>'.print_r([ $root->with ],1).'</pre>');
 
                     return $root->all();
                 },

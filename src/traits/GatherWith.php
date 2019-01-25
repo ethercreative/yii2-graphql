@@ -82,11 +82,16 @@ trait GatherWith
                 $with[] = $field;
                 // $with += $connectionType::$with;
 
-                if (!empty($children['edges']['node']))
+                $nodes = ArrayHelper::getValue($children, 'edges.node');
+
+                if (!$nodes)
+                    $nodes = ArrayHelper::getValue($children, 'node');
+
+                if ($nodes)
                 {
                     $sub = [];
 
-                    foreach ($children['edges']['node'] as $key => $value)
+                    foreach ($nodes as $key => $value)
                     {
                         if (is_array($value))
                             $this->gatherWith([$key => $value], $sub);
@@ -98,6 +103,23 @@ trait GatherWith
                             $with[] = join('.', array_filter([$field, $s]));
                     }
                 }
+            }
+            elseif($field === 'node')
+            {
+                $sub = [];
+
+                foreach ($children as $key => $value)
+                {
+                    if (is_array($value))
+                        $this->gatherWith([$key => $value], $sub);
+                }
+
+                if (!empty($sub))
+                {
+                    foreach ($sub as $s)
+                        $with[] = $s;
+                }
+
             }
             elseif(is_array($children))
             {
