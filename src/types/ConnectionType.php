@@ -81,7 +81,7 @@ class ConnectionType extends \yii\graphql\base\GraphQLType
                     if (is_array($root))
                         return count($root);
 
-                    $query = clone $root;
+                    $query = $this->cloneQuery($root);
 
                     $query->limit(null)->with([])->orderBy(null);
 
@@ -135,13 +135,18 @@ class ConnectionType extends \yii\graphql\base\GraphQLType
 
         $query->having = $having;
 
-        $query = $query->modelClass::find()
+        $query = $this->cloneQuery($query);
+
+        return;
+    }
+
+    private function cloneQuery($query)
+    {
+        return $query->modelClass::find()
             ->select($query->select)
             ->where($query->where)
             ->having($query->having)
             ->offset($query->offset)
             ->limit($query->limit);
-
-        return;
     }
 }

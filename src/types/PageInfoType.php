@@ -32,7 +32,7 @@ class PageInfoType extends Type
                         return ArrayHelper::getValue($root, '0.nodeId');
                     }
 
-                    $query = clone $root;
+                    $query = $this->cloneQuery($root);
 
                     $limit = $query->limit;
                     $offset = $query->offset;
@@ -90,7 +90,7 @@ class PageInfoType extends Type
                     if (is_array($root) || !is_object($root))
                         return true;
 
-                    $query = clone $root;
+                    $query = $this->cloneQuery($root);
                     $limit = $query->limit;
                     $offset = $query->offset;
 
@@ -170,13 +170,18 @@ class PageInfoType extends Type
 
         $query->having = $having;
 
-        $query = $query->modelClass::find()
+        $query = $this->cloneQuery($query);
+
+        return;
+    }
+
+    private function cloneQuery($query)
+    {
+        return $query->modelClass::find()
             ->select($query->select)
             ->where($query->where)
             ->having($query->having)
             ->offset($query->offset)
             ->limit($query->limit);
-
-        return;
     }
 }
