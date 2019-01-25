@@ -4,15 +4,18 @@ namespace ether\graph\types;
 
 use ether\graph\traits\GraphArgs;
 use ether\graph\traits\ResolveConnection;
+use ether\graph\traits\ResolveQuery;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 use yii\graphql\GraphQL;
 use yii\helpers\ArrayHelper;
+use yii\db\Expression;
 
 class ConnectionType extends \yii\graphql\base\GraphQLType
 {
     use GraphArgs;
     use ResolveConnection;
+    use ResolveQuery;
 
     public $name;
     public $description;
@@ -56,19 +59,10 @@ class ConnectionType extends \yii\graphql\base\GraphQLType
                     if (is_array($root))
                         return $root;
 
-                    if (ArrayHelper::getValue($root->having, '_findBySql'))
-                    {
-                        $having = $root->having;
+                    $this->nodeIds($root);
+                    $this->findBySql($root);
 
-                        unset($having['_findBySql']);
-
-                        $root->having = $having;
-
-                        $sql = $root->createCommand()->rawSql;
-                        $sql = str_replace('AND (0=1)', '', $sql);
-
-                        return $root->modelClass::findBySql($sql)->all();
-                    }
+                    $this->resolveQuery($root->modelClass, $root, $args);
 
                     return $root->all();
                 },
@@ -91,23 +85,61 @@ class ConnectionType extends \yii\graphql\base\GraphQLType
 
                     $query->limit(null)->with([])->orderBy(null);
 
-                    if (ArrayHelper::getValue($query->having, '_findBySql'))
-                    {
-                        $having = $query->having;
-
-                        unset($having['_findBySql']);
-
-                        $query->having = $having;
-
-                        $sql = $query->createCommand()->rawSql;
-                        $sql = str_replace('AND (0=1)', '', $sql);
-
-                        return $query->modelClass::findBySql($sql)->count();
-                    }
+                    $this->findBySql($query);
 
                     return $query->count();
                 },
             ],
         ];
+    }
+
+    private function nodeIds(&$query)
+    {
+        if (!$query->select)
+            $query->addSelect('*');
+
+        foreach ((array) $query->select as $where)
+        {
+            if (!($where InstanceOf Expression))
+                continue;
+
+            if (strpos($where->expression, '_node_id') !== false)
+            {
+                $gettingNodeId = true;
+                $select = $where;
+                break;
+            }
+        }
+
+        if (!$gettingNodeId)
+        {
+            $orderByString = null;
+
+            if ($query->orderBy)
+                $orderByString = 'order by ' . array_keys($query->orderBy)[0];
+
+            $query->addSelect(new Expression("ENCODE(CONVERT_TO((row_number() over ({$orderByString}))::text, 'UTF-8'), 'base64') as _node_id"));
+        }
+    }
+
+    private function findBySql(&$query)
+    {
+        if (!ArrayHelper::getValue($query->having, '_findBySql'))
+            return;
+
+        $having = $query->having;
+
+        unset($having['_findBySql']);
+
+        $query->having = $having;
+
+        $query = $query->modelClass::find()
+            ->select($query->select)
+            ->where($query->where)
+            ->having($query->having)
+            ->offset($query->offset)
+            ->limit($query->limit);
+
+        return;
     }
 }

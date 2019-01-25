@@ -22,7 +22,7 @@ class PageInfoType extends Type
             'endCursor' => [
                 'type' => GraphType::string(),
                 'description' => 'When paginating forwards, the cursor to continue.',
-                'resolve' => function($root)
+                'resolve' => function($root, $args)
                 {
                     if (!$root) return null;
 
@@ -33,12 +33,17 @@ class PageInfoType extends Type
                     }
 
                     $query = clone $root;
+
                     $limit = $query->limit;
                     $offset = $query->offset;
+
+                    $this->findBySql($query);
 
                     $tableName = $query->modelClass::tableName();
 
                     $select = ["{$tableName}.id"];
+
+                    $gettingNodeId = false;
 
                     foreach ((array) $query->select as $where)
                     {
@@ -47,20 +52,31 @@ class PageInfoType extends Type
 
                         if (strpos($where->expression, '_node_id') !== false)
                         {
+                            $gettingNodeId = true;
                             $select = $where;
                             break;
                         }
                     }
 
+                    if (!$gettingNodeId)
+                    {
+                        $orderByString = null;
+
+                        if ($query->orderBy)
+                            $orderByString = 'order by ' . array_keys($query->orderBy)[0];
+
+                        $query->addSelect(new Expression("ENCODE(CONVERT_TO((row_number() over ({$orderByString}))::text, 'UTF-8'), 'base64') as _node_id"));
+                    }
+
                     $query
-                        ->select($select)
+                        // ->select($select)
                         ->with([])
                         ->limit(1)
                         ->offset($offset + $limit - 1);
 
                     $model = $query->one();
 
-                    return ArrayHelper::getValue($model, 'nodeId');
+                    return ArrayHelper::getValue($model, '_node_id');
                 }
             ],
             'hasNextPage' => [
@@ -77,6 +93,8 @@ class PageInfoType extends Type
                     $query = clone $root;
                     $limit = $query->limit;
                     $offset = $query->offset;
+
+                    $this->findBySql($query);
 
                     $offset += $limit;
 
@@ -111,6 +129,8 @@ class PageInfoType extends Type
 
                     $query = clone $root;
 
+                    $this->findBySql($query);
+
                     $tableName = $query->modelClass::tableName();
 
                     $select = ["{$tableName}.id"];
@@ -137,5 +157,26 @@ class PageInfoType extends Type
                 }
             ],
         ];
+    }
+
+    private function findBySql(&$query)
+    {
+        if (!ArrayHelper::getValue($query->having, '_findBySql'))
+            return;
+
+        $having = $query->having;
+
+        unset($having['_findBySql']);
+
+        $query->having = $having;
+
+        $query = $query->modelClass::find()
+            ->select($query->select)
+            ->where($query->where)
+            ->having($query->having)
+            ->offset($query->offset)
+            ->limit($query->limit);
+
+        return;
     }
 }
