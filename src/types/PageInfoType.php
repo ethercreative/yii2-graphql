@@ -6,9 +6,12 @@ use GraphQL\Type\Definition\Type as GraphType;
 use GraphQL\Type\Definition\ResolveInfo;
 use yii\helpers\ArrayHelper;
 use yii\db\Expression;
+use ether\graph\traits\CloneQuery;
 
 class PageInfoType extends Type
 {
+    use CloneQuery;
+
     public $name = 'PageInfo';
 
     public function interfaces()
@@ -173,15 +176,5 @@ class PageInfoType extends Type
         $query = $this->cloneQuery($query);
 
         return;
-    }
-
-    private function cloneQuery($query)
-    {
-        return $query->modelClass::find()
-            ->select($query->select)
-            ->where($query->where)
-            ->having($query->having)
-            ->offset($query->offset)
-            ->limit($query->limit);
     }
 }

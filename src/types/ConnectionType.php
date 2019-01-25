@@ -10,12 +10,14 @@ use GraphQL\Type\Definition\Type;
 use yii\graphql\GraphQL;
 use yii\helpers\ArrayHelper;
 use yii\db\Expression;
+use ether\graph\traits\CloneQuery;
 
 class ConnectionType extends \yii\graphql\base\GraphQLType
 {
     use GraphArgs;
     use ResolveConnection;
     use ResolveQuery;
+    use CloneQuery;
 
     public $name;
     public $description;
@@ -138,15 +140,5 @@ class ConnectionType extends \yii\graphql\base\GraphQLType
         $query = $this->cloneQuery($query);
 
         return;
-    }
-
-    private function cloneQuery($query)
-    {
-        return $query->modelClass::find()
-            ->select($query->select)
-            ->where($query->where)
-            ->having($query->having)
-            ->offset($query->offset)
-            ->limit($query->limit);
     }
 }
