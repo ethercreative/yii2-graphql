@@ -98,6 +98,8 @@ class ConnectionType extends \yii\graphql\base\GraphQLType
         if (!$query->select)
             $query->addSelect('*');
 
+        $gettingNodeId = false;
+
         foreach ((array) $query->select as $where)
         {
             if (!($where InstanceOf Expression))
