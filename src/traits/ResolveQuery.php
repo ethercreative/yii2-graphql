@@ -16,9 +16,16 @@ trait ResolveQuery
         else
             $model = $modelClass;
 
-        $max = ArrayHelper::getValue($this, 'maxPageSize', 50);
+        $max = ArrayHelper::getValue($this, 'maxPageSize') ?? 50;
 
-        if ($first = ArrayHelper::getValue($args, 'first'))
+        // die('<pre>'.print_r([ $query->createCommand()->rawSql ],1).'</pre>');
+
+        if ($limit = $query->limit)
+        {
+            if ($limit > $max)
+                $query->limit($max);
+        }
+        elseif ($first = ArrayHelper::getValue($args, 'first'))
         {
             if ($first > $max)
                 $first = $max;
