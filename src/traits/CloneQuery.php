@@ -21,4 +21,5 @@ trait CloneQuery
         }
 
         return $newQuery;
+    }
 }
