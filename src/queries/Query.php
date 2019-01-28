@@ -6,6 +6,7 @@ use ether\graph\traits\GraphArgs;
 use ether\graph\traits\ResolveConnection;
 use ether\graph\traits\ResolveQuery;
 use ether\graph\traits\ConvertVariableType;
+use ether\graph\traits\GatherWith;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 use Yii;
@@ -20,6 +21,7 @@ class Query extends GraphQLQuery
     use ResolveConnection;
     use ResolveQuery;
     use ConvertVariableType;
+    use GatherWith;
 
     public $modelClass;
     public $type;
@@ -98,98 +100,5 @@ class Query extends GraphQLQuery
         }
 
         return $model;
-    }
-
-    protected function with(&$query, ResolveInfo $info, $type = null)
-    {
-        if (!$type)
-            $type = $this->type;
-
-        $with = $type::$with;
-        $withMap = $this->withMap ?: $type::$withMap;
-
-        $this->gatherWith($info->getFieldSelection(10), $with);
-
-        if (!empty($with))
-        {
-            if (!empty($withMap))
-            {
-                foreach ($with as &$relation)
-                {
-                    if (array_key_exists($relation, $withMap))
-                        $relation = $withMap[$relation];
-
-                    if (is_array($relation))
-                    {
-                        $first = array_shift($relation);
-
-                        foreach ($relation as $r)
-                        {
-                            $with[] = $r;
-                        }
-
-                        $relation = $first;
-                    }
-                }
-            }
-
-            $with = array_values(array_unique(array_filter($with)));
-
-            if (($key = array_search('pageInfo', $with)) !== false) {
-                unset($with[$key]);
-            }
-
-            $query->with($with);
-        }
-    }
-
-    protected function gatherWith($selectedFields, &$with)
-    {
-        if (!is_array($selectedFields))
-            return;
-
-        foreach($selectedFields as $field => $children)
-        {
-            if ($field === 'edges')
-            {
-                $children = ['edges' => $children];
-                // $field = $rootFieldFallback;
-                $field = null;
-            }
-
-            $isEdge = !empty($children['edges']);
-
-            if ($isEdge)
-            {
-                $connectionTypeName = Inflector::camelize(Inflector::singularize($field)) . 'ConnectionType';
-                $connectionType = $this->typeNamespace . str_replace('Linked', '', $connectionTypeName);
-
-                $with[] = $field;
-                // $with += $connectionType::$with;
-
-                if (!empty($children['edges']['node']))
-                {
-                    $sub = [];
-
-                    foreach ($children['edges']['node'] as $key => $value)
-                    {
-                        if (is_array($value))
-                            $this->gatherWith([$key => $value], $sub);
-                    }
-
-                    if (!empty($sub))
-                    {
-                        foreach ($sub as $s)
-                            $with[] = join('.', array_filter([$field, $s]));
-                    }
-                }
-            }
-            elseif(is_array($children))
-            {
-                $with[] = $field;
-            }
-        }
-
-        $with = array_filter($with);
     }
 }

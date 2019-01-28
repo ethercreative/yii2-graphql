@@ -10,6 +10,10 @@ use yii\helpers\Inflector;
 
 trait GatherWith
 {
+    private $_filterWithCache = [];
+    private $_filterWithMap = [];
+    private $_filterWithAliased = [];
+
     protected function with(&$query, ResolveInfo $info, $type = null)
     {
         $with = [];
@@ -23,7 +27,12 @@ trait GatherWith
             $withMap = $this->withMap ?: $type::$withMap;
         }
 
-        $this->gatherWith($info->getFieldSelection(10), $with);
+        $this->gatherWith($info->getFieldSelection(10), $with, null, $query->modelClass);
+        $with = array_unique($with);
+        $this->filterWith($with, $query->modelClass);
+        $with = array_merge($with, $this->_filterWithAliased);
+
+        // die('<pre>'.print_r([ 'with' => $with, 'alias' => $this->_filterWithAliased, ],1).'</pre>');
 
         if (!empty($with))
         {
@@ -58,7 +67,84 @@ trait GatherWith
         }
     }
 
-    protected function gatherWith($selectedFields, &$with)
+    protected function gatherWith($selectedFields, &$with, $parent = null)
+    {
+        if ($parent && !in_array($parent, $with))
+            $with[] = $parent;
+
+        foreach ($selectedFields as $field => $value)
+        {
+            $key = !in_array($field, ['edges', 'node']) ? $field : null;
+
+            if (is_array($value))
+                $this->gatherWith($value, $with, join('.', array_filter([$parent, $key])));
+
+            if ($key)
+                $with[] = join('.', array_filter([$parent, $field]));
+        }
+    }
+
+    protected function filterWith(&$with, $modelClass, $parent = null)
+    {
+        // if ($parent && !in_array($with, ['id', 'title', 'status'])) die('<pre>'.print_r([ $with, $modelClass, $parent ],1).'</pre>');
+
+        if (is_string($with))
+            $with = [$with];
+
+        foreach ($with as $key => $path)
+        {
+            if (in_array($path, $this->_filterWithAliased))
+                continue;
+
+            if (strpos($path, '.') === false)
+            {
+                try {
+                    if (empty($this->_filterWithCache[$modelClass]))
+                        $this->_filterWithCache[$modelClass] = new $modelClass;
+
+                    if ($alias = ArrayHelper::getValue($this->_filterWithCache[$modelClass], "filterWithMap.{$path}"))
+                    {
+                        if (!is_array($alias))
+                            $alias = [$alias];
+
+                        foreach ($alias as $additional)
+                        {
+                            $value = join('.', array_filter([$parent, $additional]));
+                            $with[] = $value;
+                            $this->_filterWithAliased[] = $value;
+                        }
+
+                        unset($with[$key]);
+                    }
+                    else
+                    {
+                        $isQuery = $this->_filterWithCache[$modelClass]->{'get'.$path}();
+
+                        if ($isQuery InstanceOf \yii\db\Query)
+                            $this->_filterWithMap[$path] = $isQuery->modelClass;
+                        else
+                            unset($with[$key]);
+                    }
+                } catch (\Exception $e) {
+                    unset($with[$key]);
+                }
+
+                continue;
+            }
+
+            list($root, $subPath) = explode('.', $path, 2);
+
+            $this->filterWith($subPath, $this->_filterWithMap[$root], join('.', array_filter([$parent, $root])));
+
+            if (is_array($subPath))
+                $subPath = ArrayHelper::getValue($subPath, '0');
+
+            if (!$subPath)
+                unset($with[$key]);
+        }
+    }
+
+    protected function gatherWithLegacy($selectedFields, &$with)
     {
         if (!is_array($selectedFields))
             return;
