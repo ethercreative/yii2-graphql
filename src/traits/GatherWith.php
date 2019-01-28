@@ -74,7 +74,7 @@ trait GatherWith
 
         foreach ($selectedFields as $field => $value)
         {
-            $key = !in_array($field, ['edges', 'node']) ? $field : null;
+            $key = !in_array($field, ['edges', 'node', 'pageInfo', 'totalCount']) ? $field : null;
 
             if (is_array($value))
                 $this->gatherWith($value, $with, join('.', array_filter([$parent, $key])));
