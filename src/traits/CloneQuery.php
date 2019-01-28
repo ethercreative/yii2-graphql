@@ -12,13 +12,13 @@ trait CloneQuery
 {
     private function cloneQuery($query)
     {
-        return $query->modelClass::find()
-            ->select($query->select)
-            ->joinWith($query->joinWith)
-            ->with($query->with)
-            ->where($query->where)
-            ->having($query->having)
-            ->offset($query->offset)
-            ->limit($query->limit);
-    }
+        $newQuery = $query->modelClass::find();
+
+        foreach (['select', 'joinWith', 'with', 'where', 'having', 'offset', 'limit', 'orderBy'] as $method)
+        {
+            if ($query->{$method})
+                $newQuery->{$method} = $query->{$method};
+        }
+
+        return $newQuery;
 }
