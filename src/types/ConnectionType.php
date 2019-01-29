@@ -64,14 +64,9 @@ class ConnectionType extends \yii\graphql\base\GraphQLType
                         return $root;
 
                     $this->nodeIds($root);
-                    $this->findBySql($root);
-
                     $this->resolveQuery($root->modelClass, $root, $args);
-
-                    // if (!$root->with)
-                        $this->with($root, $info);
-
-                    // die('<pre>'.print_r([ $root->with ],1).'</pre>');
+                    $this->with($root, $info);
+                    $this->findBySql($root);
 
                     return $root->all();
                 },
@@ -90,8 +85,7 @@ class ConnectionType extends \yii\graphql\base\GraphQLType
                     if (is_array($root))
                         return count($root);
 
-                    // $query = $this->cloneQuery($root);
-                    $query = $root;
+                    $query = clone $root;
 
                     $query->limit(null)->with([])->orderBy(null);
 
@@ -137,7 +131,7 @@ class ConnectionType extends \yii\graphql\base\GraphQLType
     private function findBySql(&$query)
     {
         if (!ArrayHelper::getValue($query->having, '_findBySql'))
-            return;
+            return clone $query;
 
         $having = $query->having;
 
@@ -147,6 +141,6 @@ class ConnectionType extends \yii\graphql\base\GraphQLType
 
         $query = $this->cloneQuery($query);
 
-        return;
+        return $query;
     }
 }
