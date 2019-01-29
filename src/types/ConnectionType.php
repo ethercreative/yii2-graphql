@@ -90,7 +90,8 @@ class ConnectionType extends \yii\graphql\base\GraphQLType
                     if (is_array($root))
                         return count($root);
 
-                    $query = $this->cloneQuery($root);
+                    // $query = $this->cloneQuery($root);
+                    $query = $root;
 
                     $query->limit(null)->with([])->orderBy(null);
 

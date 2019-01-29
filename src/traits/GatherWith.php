@@ -93,7 +93,7 @@ trait GatherWith
 
         foreach ($with as $key => $path)
         {
-            if (in_array($path, $this->_filterWithAliased))
+            if (in_array($path, $this->_filterWithAliased) || !$modelClass)
                 continue;
 
             if (strpos($path, '.') === false)
