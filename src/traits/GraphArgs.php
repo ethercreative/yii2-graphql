@@ -64,7 +64,7 @@ trait GraphArgs
 
                         $filters = $this->variableToUnderscore($filters);
 
-                        if ($where || $filters || $orderBy)
+                        if ($where || $filters || $orderBy || $this->hasMethod('resolveConnection'))
                         {
                             $query = $root->{"get{$originalRelation}"}();
 
@@ -85,6 +85,9 @@ trait GraphArgs
 
                                 $query->orderBy([$orderBy => $direction]);
                             }
+
+                            if ($this->hasMethod('resolveConnection'))
+                                $this->resolveConnection($query, $args);
 
                             return $query;
                         }
