@@ -60,7 +60,7 @@ class ConnectionType extends \yii\graphql\base\GraphQLType
                 'type' => Type::listOf(GraphQL::type($this->edges)),
                 'resolve' => function($root, $args, $context, ResolveInfo $info)
                 {
-                    if (is_array($root))
+                    if ($this->hasRoot($root))
                         return $root;
 
                     $this->nodeIds($root);
@@ -75,6 +75,7 @@ class ConnectionType extends \yii\graphql\base\GraphQLType
                 'type' => Type::nonNull(GraphQL::type(PageInfoType::class)),
                 'resolve' => function($root)
                 {
+                    $this->hasRoot($root);
                     return $root;
                 },
             ],
@@ -82,8 +83,8 @@ class ConnectionType extends \yii\graphql\base\GraphQLType
                 'type' => Type::nonNull(Type::int()),
                 'resolve' => function($root)
                 {
-                    if (is_array($root))
-                        return count($root);
+                    if ($this->hasRoot($root))
+                        return $root;
 
                     $query = clone $root;
 
@@ -95,6 +96,30 @@ class ConnectionType extends \yii\graphql\base\GraphQLType
                 },
             ],
         ];
+    }
+
+    private function hasRoot(&$root)
+    {
+        if (is_array($root))
+        {
+            if (ArrayHelper::getValue($root, 'query') || ArrayHelper::getValue($root, 'nodes'))
+            {
+                if (!empty($root['nodes']))
+                {
+                    $root = $root['nodes'];
+                    return true;
+                }
+
+                if (!empty($root['query']))
+                    $root = $root['query'];
+            }
+            else
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function nodeIds(&$query)
