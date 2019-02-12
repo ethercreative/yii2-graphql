@@ -83,7 +83,9 @@ class ConnectionType extends \yii\graphql\base\GraphQLType
                 'type' => Type::nonNull(Type::int()),
                 'resolve' => function($root)
                 {
-                    if ($this->hasRoot($root))
+                    if (!empty($root['query']))
+                        $root = $root['query'];
+                    elseif ($this->hasRoot($root))
                         return count($root);
 
                     $query = clone $root;
