@@ -18,12 +18,9 @@ trait ResolveQuery
 
         $max = ArrayHelper::getValue($this, 'maxPageSize') ?? 50;
 
-        // die('<pre>'.print_r([ $query->createCommand()->rawSql ],1).'</pre>');
-
-        if ($limit = $query->limit)
+        if ($query->limit)
         {
-            if ($limit > $max)
-                $query->limit($max);
+            // do nothing
         }
         elseif ($first = ArrayHelper::getValue($args, 'first'))
         {
@@ -41,7 +38,7 @@ trait ResolveQuery
         }
         else
         {
-            $query->limit(20);
+            $query->limit($max);
         }
 
         if ($after = ArrayHelper::getValue($args, 'after'))
