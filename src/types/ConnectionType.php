@@ -84,7 +84,7 @@ class ConnectionType extends \yii\graphql\base\GraphQLType
                 'resolve' => function($root)
                 {
                     if ($this->hasRoot($root))
-                        return $root;
+                        return count($root);
 
                     $query = clone $root;
 
