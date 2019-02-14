@@ -102,11 +102,7 @@ class PageInfoType extends Type
                     {
                         if (array_key_exists('models', $root))
                         {
-                            $limit = ArrayHelper::getValue($args, 'first') ?: ArrayHelper::getValue($args, 'last'); 
-
-                            if (!$limit)
-                                $limit = 50;
-
+                            $limit = ArrayHelper::getValue($root, 'args.first', 50); 
                             return count($root['models']) > $limit;
                         }
                         else

@@ -105,15 +105,23 @@ class ConnectionType extends \yii\graphql\base\GraphQLType
         {
             if (ArrayHelper::getValue($root, 'query') || ArrayHelper::getValue($root, 'nodes') || ArrayHelper::getValue($root, 'models'))
             {
+                $return = null;
+
                 if (!empty($root['nodes']))
-                {
-                    $root = $root['nodes'];
-                    return true;
-                }
+                    $return = $root['nodes'];
 
                 if (!empty($root['models']))
+                    $return = $root['models'];
+
+                if ($return)
                 {
-                    $root = $root['models'];
+                    if ($limit = ArrayHelper::getValue($root, 'args.first'))
+                    {
+                        if (count($return) > $limit)
+                            $return = array_slice($return, 0 $limit);
+                    }
+
+                    $root = $return;
                     return true;
                 }
 
