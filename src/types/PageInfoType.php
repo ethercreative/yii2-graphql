@@ -31,8 +31,16 @@ class PageInfoType extends Type
 
                     if (is_array($root))
                     {
-                        $root = array_reverse($root);
-                        return ArrayHelper::getValue($root, '0.nodeId');
+                        if ($models = ArrayHelper::getValue($root, 'models'))
+                        {
+                            $models = array_reverse($models);
+                            return ArrayHelper::getValue($models, '0.nodeId');
+                        }
+                        else
+                        {
+                            $root = array_reverse($root);
+                            return ArrayHelper::getValue($root, '0.nodeId');
+                        }
                     }
 
                     $query = $this->cloneQuery($root);
@@ -91,7 +99,21 @@ class PageInfoType extends Type
                         return true;
 
                     if (is_array($root) || !is_object($root))
-                        return true;
+                    {
+                        if (array_key_exists('models', $root))
+                        {
+                            $limit = ArrayHelper::getValue($args, 'first') ?: ArrayHelper::getValue($args, 'last'); 
+
+                            if (!$limit)
+                                $limit = 50;
+
+                            return count($root['models']) > $limit;
+                        }
+                        else
+                        {
+                            return true;
+                        }
+                    }
 
                     $query = $this->cloneQuery($root);
                     $limit = $query->limit;
