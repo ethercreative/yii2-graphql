@@ -118,7 +118,7 @@ class ConnectionType extends \yii\graphql\base\GraphQLType
                     if ($limit = ArrayHelper::getValue($root, 'args.first'))
                     {
                         if (count($return) > $limit)
-                            $return = array_slice($return, 0 $limit);
+                            $return = array_slice($return, 0, $limit);
                     }
 
                     $root = $return;
