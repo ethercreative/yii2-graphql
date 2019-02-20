@@ -33,6 +33,12 @@ class PageInfoType extends Type
                     {
                         if ($models = ArrayHelper::getValue($root, 'models'))
                         {
+                            if ($limit = ArrayHelper::getValue($root, 'args.first'))
+                            {
+                                if (count($models) > $limit)
+                                    $models = array_slice($models, 0, $limit);
+                            }
+
                             $models = array_reverse($models);
                             return ArrayHelper::getValue($models, '0.nodeId');
                         }
