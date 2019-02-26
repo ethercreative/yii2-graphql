@@ -10,6 +10,8 @@ class SearchQuery extends Query
 {
     public $types = [];
 
+    public $args = [];
+
     public function type()
     {
         return Type::listOf(GraphQL::type(ltrim($this->type, '\\')));
@@ -17,7 +19,7 @@ class SearchQuery extends Query
 
     public function args()
     {
-        return $this->convertArgs([
+        return $this->convertArgs(array_replace([
             'first' => 'integer',
             'after' => 'string',
             'last' => 'integer',
@@ -26,7 +28,7 @@ class SearchQuery extends Query
             'query' => 'string',
             'type' => 'enum:' . join(',', $this->types),
             'filters' => 'string',
-        ]);
+        ], $this->args));
     }
 
     public function resolve($value, $args, $context, ResolveInfo $info)
