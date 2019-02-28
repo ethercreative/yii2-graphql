@@ -33,7 +33,7 @@ class PageInfoType extends Type
                     {
                         if ($models = ArrayHelper::getValue($root, 'models'))
                         {
-                            if ($limit = ArrayHelper::getValue($root, 'args.first'))
+                            if ($limit = ArrayHelper::getValue($root, 'args.first', 50))
                             {
                                 if (count($models) > $limit)
                                     $models = array_slice($models, 0, $limit);
