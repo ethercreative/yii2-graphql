@@ -41,11 +41,13 @@ trait GatherWith
                         $relation = $withMap[$relation];
                     }
 
-                    $firstPart = explode('.', $relation)[0];
+                    if (is_string($relation)) {
+                        $firstPart = explode('.', $relation)[0];
 
-                    if (ArrayHelper::getValue($withMap, $firstPart) === false) {
-                        $relation = null;
-                        continue;
+                        if (ArrayHelper::getValue($withMap, $firstPart) === false) {
+                            $relation = null;
+                            continue;
+                        }
                     }
 
                     if (is_array($relation)) {
