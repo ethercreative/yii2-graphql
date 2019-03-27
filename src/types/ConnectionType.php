@@ -58,10 +58,10 @@ class ConnectionType extends \yii\graphql\base\GraphQLType
         return [
             'edges' => [
                 'type' => Type::listOf(GraphQL::type($this->edges)),
-                'resolve' => function($root, $args, $context, ResolveInfo $info)
-                {
-                    if ($this->hasRoot($root))
+                'resolve' => function ($root, $args, $context, ResolveInfo $info) {
+                    if ($this->hasRoot($root)) {
                         return $root;
+                    }
 
                     $this->nodeIds($root);
                     $this->resolveQuery($root->modelClass, $root, $args);
@@ -73,19 +73,18 @@ class ConnectionType extends \yii\graphql\base\GraphQLType
             ],
             'pageInfo' => [
                 'type' => Type::nonNull(GraphQL::type(PageInfoType::class)),
-                'resolve' => function($root)
-                {
+                'resolve' => function ($root) {
                     return $root;
                 },
             ],
             'totalCount' => [
                 'type' => Type::nonNull(Type::int()),
-                'resolve' => function($root)
-                {
-                    if (is_array($root) && !empty($root['query']))
+                'resolve' => function ($root) {
+                    if (is_array($root) && !empty($root['query'])) {
                         $root = $root['query'];
-                    elseif ($this->hasRoot($root))
+                    } elseif ($this->hasRoot($root)) {
                         return count($root);
+                    }
 
                     $query = clone $root;
 
@@ -101,35 +100,33 @@ class ConnectionType extends \yii\graphql\base\GraphQLType
 
     private function hasRoot(&$root)
     {
-        if (is_array($root))
-        {
-            if (ArrayHelper::getValue($root, 'query') || ArrayHelper::getValue($root, 'nodes') || ArrayHelper::getValue($root, 'models'))
-            {
+        if (is_array($root)) {
+            if (ArrayHelper::getValue($root, 'query') || ArrayHelper::keyExists('nodes', $root) || ArrayHelper::keyExists('models', $root)) {
                 $return = null;
 
-                if (!empty($root['nodes']))
+                if (ArrayHelper::keyExists('nodes', $root)) {
                     $return = $root['nodes'];
+                }
 
-                if (!empty($root['models']))
+                if (ArrayHelper::keyExists('models', $root)) {
                     $return = $root['models'];
+                }
 
-                if ($return)
-                {
-                    if ($limit = ArrayHelper::getValue($root, 'args.first', 50))
-                    {
-                        if (count($return) > $limit)
+                if ($return !== null) {
+                    if ($limit = ArrayHelper::getValue($root, 'args.first', 50)) {
+                        if (count($return) > $limit) {
                             $return = array_slice($return, 0, $limit);
+                        }
                     }
 
                     $root = $return;
                     return true;
                 }
 
-                if (!empty($root['query']))
+                if (!empty($root['query'])) {
                     $root = $root['query'];
-            }
-            else
-            {
+                }
+            } else {
                 return true;
             }
         }
@@ -139,30 +136,30 @@ class ConnectionType extends \yii\graphql\base\GraphQLType
 
     private function nodeIds(&$query)
     {
-        if (!$query->select)
+        if (!$query->select) {
             $query->addSelect('*');
+        }
 
         $gettingNodeId = false;
 
-        foreach ((array) $query->select as $where)
-        {
-            if (!($where InstanceOf Expression))
+        foreach ((array) $query->select as $where) {
+            if (!($where instanceof Expression)) {
                 continue;
+            }
 
-            if (strpos($where->expression, '_node_id') !== false)
-            {
+            if (strpos($where->expression, '_node_id') !== false) {
                 $gettingNodeId = true;
                 $select = $where;
                 break;
             }
         }
 
-        if (!$gettingNodeId)
-        {
+        if (!$gettingNodeId) {
             $orderByString = null;
 
-            if ($query->orderBy)
+            if ($query->orderBy) {
                 $orderByString = 'order by ' . array_keys($query->orderBy)[0];
+            }
 
             $query->addSelect(new Expression("ENCODE(CONVERT_TO((row_number() over ({$orderByString}))::text, 'UTF-8'), 'base64') as _node_id"));
         }
@@ -170,8 +167,9 @@ class ConnectionType extends \yii\graphql\base\GraphQLType
 
     private function findBySql(&$query)
     {
-        if (!ArrayHelper::getValue($query->having, '_findBySql'))
+        if (!ArrayHelper::getValue($query->having, '_findBySql')) {
             return clone $query;
+        }
 
         $having = $query->having;
 

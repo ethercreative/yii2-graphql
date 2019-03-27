@@ -18,15 +18,14 @@ trait GraphArgs
 {
     public function convertArgs($args = null)
     {
-        if ($args === null)
+        if ($args === null) {
             $args = property_exists($this, 'args') ? $this->args : $this->fields;
+        }
 
         $_args = [];
 
-        foreach ($args as $attribute => $type)
-        {
-            if (is_array($type) && ArrayHelper::getValue($type, 'connection'))
-            {
+        foreach ($args as $attribute => $type) {
+            if (is_array($type) && ArrayHelper::getValue($type, 'connection')) {
                 unset($type['connection']);
 
                 $type['type'] = $this->resolveArgString($type['type']);
@@ -38,62 +37,76 @@ trait GraphArgs
                     'before' => Type::string(),
                     'orderBy' => Type::string(),
                     'query' => Type::string(),
-                    'filter' => Type::string(),
+                    'filters' => ArrayHelper::getValue($type, 'filter') ? Type::listOf(GraphQL::type($type['filter'])) : Type::string(),
                 ];
 
                 $relation = $type['resolve'];
 
-                if (!is_array($relation))
-                {
-                    $type['resolve'] = function($root, $args, $context, $resolve) use ($relation)
-                    {
+                if (!is_array($relation)) {
+                    $type['resolve'] = function ($root, $args, $context, $resolve) use ($relation, $type) {
                         $originalRelation = $relation;
 
-                        if (is_string($relation))
+                        if (is_string($relation)) {
                             $relation[0] = strtolower($relation[0]);
+                        }
 
                         $where = ArrayHelper::getValue($args, 'query');
                         $filters = ArrayHelper::getValue($args, 'filters');
                         $orderBy = ArrayHelper::getValue($args, 'orderBy');
 
-                        if (!$filters)
+                        if (!$filters) {
                             $filters = ArrayHelper::getValue($args, 'filter');
+                        }
 
-                        if (is_string($filters))
+                        if (is_string($filters)) {
                             $filters = Json::decode($filters);
+                        }
+
+                        if ($this->hasMethod('connectionFilterResolver')) {
+                            return $this->connectionFilterResolver($root, $args, $context, $resolve, [
+                                'where' => $where,
+                                'filters' => $filters,
+                                'orderBy' => $orderBy,
+                                'relation' => $originalRelation,
+                                'type' => $type,
+                            ]);
+                        }
 
                         $filters = $this->variableToUnderscore($filters);
 
-                        if ($where || $filters || $orderBy || $this->hasMethod('resolveConnection'))
-                        {
+                        if ($where || $filters || $orderBy || $this->hasMethod('resolveConnection')) {
                             $query = $root->{"get{$originalRelation}"}();
 
-                            if ($where)
+                            if ($where) {
                                 $query->andWhere($where);
+                            }
 
-                            if ($filters)
+                            if ($filters) {
                                 $query->andWhere($filters);
+                            }
 
-                            if ($orderBy)
-                            {
+                            if ($orderBy) {
                                 $direction = SORT_ASC;
 
-                                if (strpos($orderBy, '-') === 0)
+                                if (strpos($orderBy, '-') === 0) {
                                     $direction = SORT_DESC;
+                                }
 
                                 $orderBy = trim(Inflector::underscore($orderBy), ' -+');
 
                                 $query->orderBy([$orderBy => $direction]);
                             }
 
-                            if ($this->hasMethod('resolveConnection'))
+                            if ($this->hasMethod('resolveConnection')) {
                                 $this->resolveConnection($query, $args);
+                            }
 
                             return $query;
                         }
 
-                        if (is_string($relation))
+                        if (is_string($relation)) {
                             return $root->{$relation};
+                        }
 
                         return $relation($root, $args, $context, $resolve);
                     };
@@ -123,14 +136,15 @@ trait GraphArgs
 
     private function resolveArgString($type, $attribute = null)
     {
-        if (is_object($type))
+        if (is_object($type)) {
             return $type;
+        }
 
-        if (is_array($type))
+        if (is_array($type)) {
             $type = ArrayHelper::getValue($type, 'type');
+        }
 
-        if (strpos(trim($type, '[ '), 'type:') === 0)
-        {
+        if (strpos(trim($type, '[ '), 'type:') === 0) {
             $type = str_replace('type:', '', $type);
             $listOf = strpos($type, '[') !== false;
             $nonNull = strpos($type, '!') !== false;
@@ -138,11 +152,13 @@ trait GraphArgs
             $type = trim($type, '![] ');
             $type = GraphQL::type($type);
 
-            if ($listOf)
+            if ($listOf) {
                 $type = Type::listOf($type);
+            }
 
-            if ($nonNull)
+            if ($nonNull) {
                 $type = Type::nonNull($type);
+            }
 
             return $type;
         }
@@ -154,8 +170,7 @@ trait GraphArgs
 
         list($setType, $typeValues) = array_pad(explode(':', $type, 2), 2, null);
 
-        switch ($setType)
-        {
+        switch ($setType) {
             case 'int':
             case 'integer':
                 $type = Type::int();
@@ -187,9 +202,9 @@ trait GraphArgs
 
                 $values = [];
 
-                foreach ($matches[0] as $match)
-                {
-                    list($key, $value) = array_pad(explode(':', trim($match, ':'), 2), 2, null);;
+                foreach ($matches[0] as $match) {
+                    list($key, $value) = array_pad(explode(':', trim($match, ':'), 2), 2, null);
+                    ;
 
                     $values[$key] = ['value' => $value ?: $key];
                 }
@@ -204,41 +219,45 @@ trait GraphArgs
                 break;
 
             default:
-                if (strpos($type, '\\') || StringHelper::endsWith($type, 'Type'))
+                if (strpos($type, '\\') || StringHelper::endsWith($type, 'Type')) {
                     $type = GraphQL::type($type);
-                else
+                } else {
                     $type = Type::string();
+                }
                 break;
         }
 
-        if ($listOf)
+        if ($listOf) {
             $type = Type::listOf($type);
+        }
 
-        if ($nonNull)
+        if ($nonNull) {
             $type = Type::nonNull($type);
+        }
 
         return $type;
     }
 
     public function resolveConnectionRelation($root, $relation, $args)
     {
-        if (!$args)
+        if (!$args) {
             return $root->{Inflector::variablize($relation)};
+        }
 
         $query = $root->{'get' . Inflector::camelize($relation)}();
 
-        if ($orderBy = ArrayHelper::getValue($args, 'orderBy'))
-        {
+        if ($orderBy = ArrayHelper::getValue($args, 'orderBy')) {
             $this->resolveOrder($query, $orderBy, $query->modelClass);
         }
 
-        if ($first = ArrayHelper::getValue($args, 'first', 10))
+        if ($first = ArrayHelper::getValue($args, 'first', 10)) {
             $query->limit($first);
+        }
 
-        if ($filter = ArrayHelper::getValue($args, 'filter'))
-        {
-            if (is_string($filter))
+        if ($filter = ArrayHelper::getValue($args, 'filter')) {
+            if (is_string($filter)) {
                 $filter = Json::decode($filter);
+            }
 
             $query->andWhere($filter);
         }
