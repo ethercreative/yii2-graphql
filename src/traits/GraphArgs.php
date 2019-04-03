@@ -139,8 +139,11 @@ trait GraphArgs
         if (is_object($type)) {
             return $type;
         }
+        
+        $listOf = false;
 
         if (is_array($type)) {
+            $listOf = ArrayHelper::getValue($type, 'listOf') ?: false;
             $type = ArrayHelper::getValue($type, 'type');
         }
 
@@ -164,7 +167,7 @@ trait GraphArgs
         }
 
         $nonNull = strpos($type, '!') !== false;
-        $listOf = strpos($type, '[') !== false;
+        $listOf = $listOf || strpos($type, '[') !== false;
 
         $type = trim($type, '![] ');
 
