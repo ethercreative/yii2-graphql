@@ -140,7 +140,9 @@ trait GatherWith
 
             list($root, $subPath) = explode('.', $path, 2);
 
-            $this->filterWith($subPath, $this->_filterWithMap[$root], join('.', array_filter([$parent, $root])));
+            if (!empty($this->_filterWithMap[$root]) {
+                $this->filterWith($subPath, $this->_filterWithMap[$root], join('.', array_filter([$parent, $root])));
+            }
 
             if (is_array($subPath)) {
                 $subPath = ArrayHelper::getValue($subPath, '0');
