@@ -140,7 +140,7 @@ trait GatherWith
 
             list($root, $subPath) = explode('.', $path, 2);
 
-            if (!empty($this->_filterWithMap[$root]) {
+            if (!empty($this->_filterWithMap[$root])) {
                 $this->filterWith($subPath, $this->_filterWithMap[$root], join('.', array_filter([$parent, $root])));
             }
 
