@@ -24,7 +24,7 @@ trait GatherWith
 
         if ($type) {
             $with = $type::$with;
-            $withMap = $this->withMap ?: $type::$withMap;
+            $withMap = $this->withMap ?: ($type::$withMap ?? []);
         }
 
         $this->gatherWith($info->getFieldSelection(10), $with, null, $query->modelClass);
@@ -93,65 +93,15 @@ trait GatherWith
 
     protected function filterWith(&$with, $modelClass, $parent = null)
     {
-        // if ($parent && !in_array($with, ['id', 'title', 'status'])) die('<pre>'.print_r([ $with, $modelClass, $parent ],1).'</pre>');
-
         if (is_string($with)) {
             $with = [$with];
         }
 
-        foreach ($with as $key => $path) {
-            if (in_array($path, $this->_filterWithAliased) || !$modelClass) {
-                continue;
-            }
+        $with = array_map(function ($a) {
+            return substr($a, 0, strrpos($a, '.') ?: 0);
+        }, $with);
 
-            if (strpos($path, '.') === false) {
-                try {
-                    if (empty($this->_filterWithCache[$modelClass])) {
-                        $this->_filterWithCache[$modelClass] = new $modelClass;
-                    }
-
-                    if ($alias = ArrayHelper::getValue($this->_filterWithCache[$modelClass], "filterWithMap.{$path}")) {
-                        if (!is_array($alias)) {
-                            $alias = [$alias];
-                        }
-
-                        foreach ($alias as $additional) {
-                            $value = join('.', array_filter([$parent, $additional]));
-                            $with[] = $value;
-                            $this->_filterWithAliased[] = $value;
-                        }
-
-                        unset($with[$key]);
-                    } else {
-                        $isQuery = $this->_filterWithCache[$modelClass]->{'get'.$path}();
-
-                        if ($isQuery instanceof \yii\db\Query) {
-                            $this->_filterWithMap[$path] = $isQuery->modelClass;
-                        } else {
-                            unset($with[$key]);
-                        }
-                    }
-                } catch (\Exception $e) {
-                    unset($with[$key]);
-                }
-
-                continue;
-            }
-
-            list($root, $subPath) = explode('.', $path, 2);
-
-            if (!empty($this->_filterWithMap[$root])) {
-                $this->filterWith($subPath, $this->_filterWithMap[$root], join('.', array_filter([$parent, $root])));
-            }
-
-            if (is_array($subPath)) {
-                $subPath = ArrayHelper::getValue($subPath, '0');
-            }
-
-            if (!$subPath) {
-                unset($with[$key]);
-            }
-        }
+        $with = array_unique(array_filter($with));
     }
 
     protected function gatherWithLegacy($selectedFields, &$with)

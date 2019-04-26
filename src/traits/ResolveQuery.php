@@ -11,93 +11,84 @@ trait ResolveQuery
 {
     protected function resolveQuery($modelClass, &$query, $args, $fields = [])
     {
-        if (is_string($modelClass))
+        if (is_string($modelClass)) {
             $model = new $modelClass;
-        else
+        } else {
             $model = $modelClass;
+        }
 
         $max = ArrayHelper::getValue($this, 'maxPageSize') ?? 50;
 
-        if ($query->limit)
-        {
+        if ($query->limit) {
             // do nothing
-        }
-        elseif ($first = ArrayHelper::getValue($args, 'first'))
-        {
-            if ($first > $max)
+        } elseif ($first = ArrayHelper::getValue($args, 'first')) {
+            if ($first > $max) {
                 $first = $max;
+            }
 
             $query->limit($first);
-        }
-        elseif ($last = ArrayHelper::getValue($args, 'last'))
-        {
-            if ($last > $max)
+        } elseif ($last = ArrayHelper::getValue($args, 'last')) {
+            if ($last > $max) {
                 $last = $max;
+            }
 
             $query->limit($last);
-        }
-        else
-        {
+        } else {
             $query->limit($max);
         }
 
-        if ($after = ArrayHelper::getValue($args, 'after'))
-        {
+        if ($after = ArrayHelper::getValue($args, 'after')) {
             $after = Json::decode(base64_decode($after));
             $query->offset($after);
         }
 
         $orderBy = ArrayHelper::getValue($args, 'orderBy');
 
-        if (!$orderBy)
+        if (!$orderBy) {
             $orderBy = ArrayHelper::getValue($this, 'defaultOrder');
+        }
 
-        if ($orderBy)
+        if ($orderBy) {
             $this->resolveOrder($query, $orderBy, $modelClass, $args);
+        }
 
         $fields = ArrayHelper::getValue($fields, 'edges.node');
 
-        if (!empty($fields))
-        {
-            foreach ($fields as $key => $value)
-            {
-                if (is_array($value))
+        if (!empty($fields)) {
+            foreach ($fields as $key => $value) {
+                if (is_array($value)) {
                     $query->with($key);
+                }
             }
         }
     }
 
     protected function resolveOrder(&$query, $orderBy, $modelClass, $args = null, $model = null)
     {
-        if (!$model)
-        {
-            if (is_string($modelClass))
+        if (!$model) {
+            if (is_string($modelClass)) {
                 $model = new $modelClass;
-            else
+            } else {
                 $model = $modelClass;
+            }
         }
 
         $direction = SORT_ASC;
 
-        if ($orderBy[0] === '-')
+        if ($orderBy[0] === '-') {
             $direction = SORT_DESC;
+        }
 
         $orderBy = trim($orderBy, '-+ ');
 
-        if (strpos($orderBy, '.') !== false)
-        {
-            if ($alias = ArrayHelper::getValue($model->sortAlias, $orderBy))
-            {
+        if (strpos($orderBy, '.') !== false) {
+            if ($alias = ArrayHelper::getValue($model->sortAlias, $orderBy)) {
                 $orderBy = $alias;
-            }
-            else
-            {
+            } else {
                 $orderParts = explode('.', $orderBy);
 
-                if ($model->hasAttribute($orderParts[0]))
-                {
-                    switch(ArrayHelper::getValue($model, 'jsonTypes.' . join('.', $orderParts)))
-                    {
+                if ($model->hasAttribute($orderParts[0])) {
+                    switch (ArrayHelper::getValue($model, 'jsonTypes.' . join('.', $orderParts))) {
                         case 'int':
                         case 'integer':
                             $type = '::int';
@@ -124,30 +115,27 @@ trait ResolveQuery
                         ')',
                         $type,
                     ]);
-                }
-                else
-                {
+                } else {
                     $query->joinWith("{$orderParts[0]} rel");
                     $orderBy = join('.', ['rel', $orderParts[1]]);
                     // check related attributes
                 }
             }
-        }
-        else
-        {
+        } else {
             $orderBy = Inflector::underscore($orderBy);
 
-            if (!$model->hasAttribute($orderBy))
-            {
+            if (!$model->hasAttribute($orderBy)) {
                 $orderBy = $modelClass::tableName() . '.id';
             }
 
-            if (strpos($orderBy, '.') === false)
+            if (strpos($orderBy, '.') === false) {
                 $orderBy = $modelClass::tableName() . '.' . $orderBy;
+            }
         }
 
-        if ($orderBy === 'id')
+        if ($orderBy === 'id') {
             $orderBy = $modelClass::tableName() . '.id';
+        }
 
         $orderBy = '(' . $orderBy . ')';
 
