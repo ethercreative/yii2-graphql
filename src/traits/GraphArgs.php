@@ -37,6 +37,7 @@ trait GraphArgs
                     'before' => Type::string(),
                     'orderBy' => Type::string(),
                     'query' => Type::string(),
+                    'filter' => Type::string(),
                     'filters' => ArrayHelper::getValue($type, 'filter') ? Type::listOf(GraphQL::type($type['filter'])) : Type::string(),
                 ];
 
