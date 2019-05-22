@@ -137,7 +137,7 @@ class ConnectionType extends \yii\graphql\base\GraphQLType
     private function nodeIds(&$query)
     {
         if (!$query->select) {
-            $query->addSelect('*');
+            $query->addSelect("{$query->modelClass::tableName()}.*");
         }
 
         $gettingNodeId = false;
