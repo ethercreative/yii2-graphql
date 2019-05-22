@@ -13,6 +13,7 @@ use yii\helpers\ArrayHelper;
 use yii\helpers\StringHelper;
 use yii\helpers\Inflector;
 use yii\helpers\Json;
+use yii\db\Expression;
 
 trait GraphArgs
 {
@@ -79,6 +80,7 @@ trait GraphArgs
                             $query = $root->{"get{$originalRelation}"}();
 
                             if ($where) {
+                                $where = $this->formatWhere($where, $query);
                                 $query->andWhere($where);
                             }
 
@@ -94,7 +96,7 @@ trait GraphArgs
                                 }
 
                                 $orderBy = trim(Inflector::underscore($orderBy), ' -+');
-                                
+
                                 if (strpos($orderBy, '.') === false) {
                                     $orderModel = new $query->modelClass;
                                     $orderBy = "{$orderModel::tableName()}.$orderBy";
@@ -145,7 +147,7 @@ trait GraphArgs
         if (is_object($type)) {
             return $type;
         }
-        
+
         $listOf = false;
 
         if (is_array($type)) {
@@ -272,5 +274,43 @@ trait GraphArgs
         }
 
         return $query;
+    }
+
+    public function formatWhere($queryString, &$query)
+    {
+        $where = [];
+
+        $model = new $query->modelClass;
+        $search = $model->searchableAttributes;
+
+        $i = 0;
+
+        foreach ($search as $key => $value) {
+            $attribute = !is_numeric($key) ? $key : $value;
+
+            if (strpos($attribute, '.') === false) {
+                $path = trim($model::tableName(), '{}');
+                $column = $attribute;
+            } else {
+                list($path, $column) = explode('.', $attribute);
+                $query->joinWith("{$path} {$path}");
+            }
+
+            if (strpos($column, '->') === false) {
+                $column = "[[{$column}]]";
+            }
+
+            $attribute = "{{{$path}}}.{$column}";
+
+            $where[] = new Expression("cast({$attribute} as text) ilike :where{$i}", ["where{$i}" => "%$queryString%"]);
+
+            ++$i;
+        }
+
+        if ($where) {
+            array_unshift($where, 'or');
+        }
+
+        return $where;
     }
 }
