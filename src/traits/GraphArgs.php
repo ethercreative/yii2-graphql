@@ -93,6 +93,11 @@ trait GraphArgs
                                 }
 
                                 $orderBy = trim(Inflector::underscore($orderBy), ' -+');
+                                
+                                if (strpos($orderBy, '.') === false) {
+                                    $orderModel = new $query->modelClass;
+                                    $orderBy = "{$orderModel::tableName()}.$orderBy";
+                                }
 
                                 $query->orderBy([$orderBy => $direction]);
                             }
