@@ -77,7 +77,7 @@ trait GraphArgs
 
                         $filters = $this->variableToUnderscore($filters);
 
-                        if ($where || $filters || $orderBy || $limit || $this->hasMethod('resolveConnection')) {
+                        if (is_string($originalRelation) && ($where || $filters || $orderBy || $limit || $this->hasMethod('resolveConnection'))) {
                             $query = $root->{"get{$originalRelation}"}();
 
                             if ($where) {
