@@ -55,6 +55,7 @@ trait GraphArgs
                         $where = ArrayHelper::getValue($args, 'query');
                         $filters = ArrayHelper::getValue($args, 'filters');
                         $orderBy = ArrayHelper::getValue($args, 'orderBy');
+                        $limit = ArrayHelper::getValue($args, 'first');
 
                         if (!$filters) {
                             $filters = ArrayHelper::getValue($args, 'filter');
@@ -76,7 +77,7 @@ trait GraphArgs
 
                         $filters = $this->variableToUnderscore($filters);
 
-                        if ($where || $filters || $orderBy || $this->hasMethod('resolveConnection')) {
+                        if ($where || $filters || $orderBy || $limit || $this->hasMethod('resolveConnection')) {
                             $query = $root->{"get{$originalRelation}"}();
 
                             if ($where) {
@@ -103,6 +104,10 @@ trait GraphArgs
                                 }
 
                                 $query->orderBy([$orderBy => $direction]);
+                            }
+
+                            if ($limit) {
+                                $query->limit($limit);
                             }
 
                             if ($this->hasMethod('resolveConnection')) {

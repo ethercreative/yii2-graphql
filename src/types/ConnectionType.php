@@ -59,7 +59,13 @@ class ConnectionType extends \yii\graphql\base\GraphQLType
             'edges' => [
                 'type' => Type::listOf(GraphQL::type($this->edges)),
                 'resolve' => function ($root, $args, $context, ResolveInfo $info) {
+                    $limit = ArrayHelper::getValue($args, 'first');
+
                     if ($this->hasRoot($root)) {
+                        if (is_array($root) && $limit) {
+                            $root = array_splice($root, 0, $limit);
+                        }
+
                         return $root;
                     }
 
@@ -67,6 +73,10 @@ class ConnectionType extends \yii\graphql\base\GraphQLType
                     $this->resolveQuery($root->modelClass, $root, $args);
                     $this->with($root, $info);
                     $this->findBySql($root);
+
+                    if ($limit) {
+                        $root->limit($limit);
+                    }
 
                     return $root->all();
                 },
