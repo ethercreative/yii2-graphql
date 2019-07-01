@@ -68,7 +68,7 @@ class Query extends GraphQLQuery
         $this->with($query, $info);
 
         if ($this->beforeQuery)
-            call_user_func($this->beforeQuery, $query);
+            call_user_func([$this, $this->beforeQuery], $query);
 
         $fields = $info->getFieldSelection(10);
 
