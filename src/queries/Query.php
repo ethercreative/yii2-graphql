@@ -53,8 +53,7 @@ class Query extends GraphQLQuery
         $_args = [];
         $tableName = $modelClass::tableName();
 
-        foreach ($args as $key => $value)
-        {
+        foreach ($args as $key => $value) {
             $_args[$tableName . '.' . $key] = $value;
         }
 
@@ -62,41 +61,44 @@ class Query extends GraphQLQuery
             ->andFilterWhere($_args)
             ->limit(1);
 
-        if ($this->cacheFind)
+        if ($this->cacheFind) {
             $query->cache($this->cacheFind);
+        }
 
         $this->with($query, $info);
 
-        if ($this->beforeQuery)
+        if ($this->beforeQuery) {
             call_user_func([$this, $this->beforeQuery], $query);
+        }
 
         $fields = $info->getFieldSelection(10);
 
-        if (!empty($fields))
-        {
+        if (!empty($fields)) {
             $totalOnly = true;
 
-            foreach ($fields as $field)
-            {
-                if ($field !== ['totalCount' => true])
+            foreach ($fields as $field) {
+                if ($field !== ['totalCount' => true]) {
                     $totalOnly = false;
+                }
             }
 
-            if ($totalOnly)
+            if ($totalOnly) {
                 unset($query->with);
+            }
         }
 
         $model = $query->one();
 
-        if (!$model)
+        if (!$model) {
             return null;
+        }
 
-        if ($checkAccess = $this->checkAccess)
-        {
-            if (is_string($checkAccess))
+        if ($checkAccess = $this->checkAccess) {
+            if (is_string($checkAccess)) {
                 Yii::$app->scope->checkAccess($checkAccess, $model);
-            else
+            } else {
                 call_user_func($this->checkAccess, $model);
+            }
         }
 
         return $model;

@@ -17,6 +17,8 @@ trait GatherWith
     protected function with(&$query, ResolveInfo $info, $type = null)
     {
         $with = [];
+        $withMap = [];
+        $typeWithMap = [];
 
         if (!$type && $this->hasProperty('type') && $this->type) {
             $type = $this->type;
@@ -24,15 +26,15 @@ trait GatherWith
 
         if ($type) {
             $with = $type::$with;
-            $withMap = $this->withMap ?: ($type::$withMap ?? []);
+            $typeWithMap = $type::$withMap ?? [];
         }
+
+        $withMap = array_merge(ArrayHelper::getValue($this, 'withMap') ?: [], $typeWithMap, ArrayHelper::getValue($query->modelClass, 'withMap') ?: [], $query->modelClass::$withMap ?? []);
 
         $this->gatherWith($info->getFieldSelection(10), $with, null, $query->modelClass);
         $with = array_unique($with);
         $this->filterWith($with, $query->modelClass);
         $with = array_merge($with, $this->_filterWithAliased);
-
-        // die('<pre>'.print_r([ 'with' => $with, 'alias' => $this->_filterWithAliased, ],1).'</pre>');
 
         if (!empty($with)) {
             if (!empty($withMap)) {
@@ -41,10 +43,15 @@ trait GatherWith
                         $relation = $withMap[$relation];
                     }
 
+                    if ($relation === false) {
+                        $relation = null;
+                        continue;
+                    }
+
                     if (is_string($relation)) {
                         $firstPart = explode('.', $relation)[0];
 
-                        if (ArrayHelper::getValue($withMap, $firstPart) === false) {
+                        if (ArrayHelper::getValue($withMap, $relation) === false || ArrayHelper::getValue($withMap, $firstPart) === false) {
                             $relation = null;
                             continue;
                         }
