@@ -34,8 +34,13 @@ trait ShouldValidate
 
                 if ($shouldValidateModel)
                 {
-                    $model = new $this->modelClass;
-                    $model->attributes = $args;
+                	if (!empty($args['id'])) {
+                		$model = $this->modelClass::findOne($args['id']);
+                	} else {
+	                    $model = new $this->modelClass;
+	                }
+
+	                $model->attributes = $args;
                     $model->validate();
 
                     if ($model->errors)
