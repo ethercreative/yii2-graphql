@@ -20,12 +20,12 @@ trait GraphArgs
     public function convertArgs($args = null)
     {
         if ($args === null) {
-            $args = property_exists($this, 'args') ? $this->args : $this->fields;
+            $args = property_exists($this, 'args') && $this->args ? $this->args : $this->fields;
         }
 
         $_args = [];
 
-        foreach ($args as $attribute => $type) {
+        foreach ((array) $args as $attribute => $type) {
             if (is_array($type) && ArrayHelper::getValue($type, 'connection')) {
                 unset($type['connection']);
 
@@ -154,10 +154,12 @@ trait GraphArgs
         }
 
         $listOf = false;
+        $resolve = null;
 
         if (is_array($type)) {
             $listOf = ArrayHelper::getValue($type, 'listOf') ?: false;
             $type = ArrayHelper::getValue($type, 'type');
+            $resolve = ArrayHelper::getValue($type, 'resolve');
         }
 
         if (strpos(trim($type, '[ '), 'type:') === 0) {
@@ -210,6 +212,8 @@ trait GraphArgs
                 break;
 
             case 'datetime':
+            case 'timestamp':
+            case 'timestamptz':
                 $type = GraphQL::type(DateTimeType::class);
                 break;
 
@@ -241,6 +245,10 @@ trait GraphArgs
                     $type = Type::string();
                 }
                 break;
+        }
+
+        if ($resolve) {
+            $type = ['type' => $type, 'resolve' => $resolve];
         }
 
         if ($listOf) {

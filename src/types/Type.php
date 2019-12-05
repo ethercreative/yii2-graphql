@@ -23,10 +23,15 @@ class Type extends GraphQLType
     public $fields = [];
     public static $with = [];
     public static $withMap = [];
+    public $useNodeId = true;
 
     public function interfaces()
     {
-        return [GraphQL::type(NodeType::class)];
+        if ($this->useNodeId) {
+            return [GraphQL::type(NodeType::class)];
+        }
+
+        return [];
     }
 
     public function __construct()
@@ -39,16 +44,28 @@ class Type extends GraphQLType
 
     public function fields()
     {
-        $args = $this->args();
+        $fields = func_get_args();
 
-        $args['nodeId'] = [
-            'type' => GraphType::string(),
-            'resolve' => function($root)
-            {
-                return ArrayHelper::getValue($root, 'nodeId');
+        if ($fields) {
+            $fields = $fields[0];
+        } else {
+            $fields = $this->args();
+
+            if (empty($fields)) {
+                $fields = $this->fields();
             }
-        ];
+        }
 
-        return $args;
+        if ($this->useNodeId) {
+            $fields['nodeId'] = [
+                'type' => GraphType::string(),
+                'resolve' => function($root)
+                {
+                    return ArrayHelper::getValue($root, 'nodeId');
+                }
+            ];
+        }
+
+        return $fields;
     }
 }
