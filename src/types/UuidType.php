@@ -29,8 +29,8 @@ class UuidType extends CustomScalarType
         return $value;
     }
 
-    public function parseLiteral($value)
+    public function parseLiteral($valueNode, array $variables = null)
     {
-        return $value->value;
+        return $valueNode->value;
     }
 }

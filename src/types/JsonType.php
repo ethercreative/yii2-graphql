@@ -25,8 +25,9 @@ class JsonType extends CustomScalarType
     }
     public function serialize($value)
     {
-        if (!empty($value) && is_string($value) && in_array($value[0], ['{', '[']))
+        if (!empty($value) && is_string($value) && in_array($value[0], ['{', '['])) {
             $value = Json::decode($value);
+        }
 
         return $value;
     }
@@ -36,7 +37,7 @@ class JsonType extends CustomScalarType
         return $value;
     }
 
-    public function parseLiteral($valueNode)
+    public function parseLiteral($valueNode, array $variables = null)
     {
         switch ($valueNode) {
             case ($valueNode instanceof StringValueNode):
@@ -48,7 +49,7 @@ class JsonType extends CustomScalarType
             case ($valueNode instanceof ObjectValueNode): {
                 $value = [];
                 foreach ($valueNode->fields as $field) {
-                    $value[$field->name->value] = $this->parseLiteral($field->value);
+                    $value[$field->name->value] = $this->parseLiteral($field->value, $variables);
                 }
                 return $value;
             }
