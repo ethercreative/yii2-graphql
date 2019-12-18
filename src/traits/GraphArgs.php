@@ -130,10 +130,14 @@ trait GraphArgs
                 continue;
             }
 
-            $description = ArrayHelper::getValue($type, 'description');
-            $type = $this->resolveArgString($type, $attribute);
+            if (is_object($type)) {
+                $_args[$attribute] = $type;
+            } else {
+                $description = ArrayHelper::getValue($type, 'description');
+                $type = $this->resolveArgString($type, $attribute);
 
-            $_args[$attribute] = ['type' => $type, 'description' => $description];
+                $_args[$attribute] = ['type' => $type, 'description' => $description];
+            }
         }
 
         return $_args;
